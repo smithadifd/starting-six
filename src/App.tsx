@@ -1,10 +1,10 @@
-import React from "react";
-import Counter from "./features/counter/Counter";
+// import Layout from "components/ui/Layout";
+import Layout from "./components/ui/Layout";
 
 function App(): JSX.Element {
   return (
     <div className="App">
-      <Counter />
+      <Layout />
     </div>
   );
 }
