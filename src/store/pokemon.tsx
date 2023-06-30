@@ -7,12 +7,10 @@ type ChosenPokemon = { [key: string]: Pokemon };
 interface PokemonState {
   pokemon: Pokemon[];
   chosenPokemon: ChosenPokemon;
-  filter: string;
 }
 const initialState: PokemonState = {
   pokemon: [],
   chosenPokemon: {},
-  filter: "", // TODO: Pass via context or props
 };
 
 export const pokemonSlice = createSlice({
@@ -21,9 +19,6 @@ export const pokemonSlice = createSlice({
   reducers: {
     setPokemon: (state, action) => {
       state.pokemon = action.payload;
-    },
-    setFilter: (state, action) => {
-      state.filter = action.payload;
     },
     initializePokemon: (state, action) => {
       state.chosenPokemon = action.payload;

@@ -12,9 +12,10 @@ interface PokemonCardProps {
   pokemon: Pokemon;
   isSelected?: boolean;
   className?: string;
+  filter?: string;
 }
 
-function PokemonCard({ pokemon, isSelected = false, className = "" } : PokemonCardProps) {
+function PokemonCard({ pokemon, isSelected = false, className = "", filter } : PokemonCardProps) {
   const navigate = useNavigate();
   const onClickHandler = () => navigate(`../${pokemon.name}`);
   const classes = getClassNames(
@@ -29,6 +30,7 @@ function PokemonCard({ pokemon, isSelected = false, className = "" } : PokemonCa
         pokemon={pokemon}
         className="flex grow"
         isSelected={isSelected}
+        filter={filter}
       />
         {/* {isSelected && (
           <FontAwesomeIcon icon={faStar} className="text-yellow-500" />

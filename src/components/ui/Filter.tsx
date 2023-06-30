@@ -11,7 +11,7 @@ const Filter = ({ filter, handler } : FilterProps) => {
       type="text"
       placeholder="Search Pokemon by name or number"
       onChange={handler}
-      className="w-full rounded border border-gray-300 p-2"
+      className="w-full rounded border border-gray-300 p-2 shadow-sm"
     />
   );
 }
