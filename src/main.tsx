@@ -12,6 +12,8 @@ import {
 
 import { createRoot } from "react-dom/client";
 
+import PokemonGrid from "components/pokemon/PokemonGrid";
+
 const container = document.getElementById("root");
 
 if (!container) throw new Error("Could not find root element with id 'root'");
@@ -20,6 +22,12 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    children: [
+      {
+        index: true,
+        element: <PokemonGrid />,
+      },
+    ],
   }
 ]);
 const root = createRoot(container);
