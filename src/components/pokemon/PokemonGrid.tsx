@@ -8,33 +8,39 @@ import { Pokemon } from "lib/types";
 
 import Filter from "components/ui/Filter";
 import PkCard from "components/pokemon/PokemonCard";
+import PokemonDetailsModal from "components/pokemon/PokemonDetailsModal";
 
 interface PokemonCardProps {
   pokemon: Pokemon;
   isSelected?: boolean;
   filter?: string;
+  onClick?: () => void;
 }
 
-const PokemonCard = ({ pokemon, isSelected = false, filter } : PokemonCardProps) => {
-  return <PkCard pokemon={pokemon} isSelected={isSelected} filter={filter} />;
+const PokemonCard = ({ pokemon, isSelected = false, filter, onClick } : PokemonCardProps) => {
+  return <PkCard pokemon={pokemon} isSelected={isSelected} filter={filter} onClick={onClick} />;
 }
 
 /**
  * Consists of a list of PokemonCard components, which is a list of a Pokemon's name, number, and sprite.
  */
-// function PokemonGrid({ pokemon } : PokemonGridProps) {
 const PokemonGrid = () => {
   const { data } = useGetPokemonListQuery();
-  // const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
-  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
-  const [filter, setFilter] = useState<string>("");
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
 
-  // TODO: Lookup filter logic, make into handler, then run on useEffect
+  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
+  const [selectedPokemonName, setSelectedPokemonName] = useState<String | null>(null);
+  const [filter, setFilter] = useState<string>("");
+
   const filterHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilter(e.target.value);
   };
-
+  const onPokemonClick = (pokemonName: String) => {
+    setSelectedPokemonName(pokemonName);
+  };
+  const onClose = () => {
+    setSelectedPokemonName(null);
+  };
 
   useEffect(() => {
     const pokemon = data?.results || [];
@@ -53,11 +59,13 @@ const PokemonGrid = () => {
             pokemon: p,
             isSelected: Boolean(chosenPokemon && chosenPokemon[p.name]),
             filter,
+            onClick: () => onPokemonClick(p.name),
           });
         }}
-        style={{ height: "calc(100vh - 115px)" }}
+        style={{ height: "calc(100vh - 156px)" }}
         listClassName="flex flex-wrap justify-center"
       />
+      <PokemonDetailsModal name={selectedPokemonName} isOpen={Boolean(selectedPokemonName)} onClose={onClose} />
     </div>
   );
 }

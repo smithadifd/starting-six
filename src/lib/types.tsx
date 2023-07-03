@@ -12,4 +12,26 @@ type Pokemon = {
   types: PokemonType[];
 };
 
-export type { Pokemon, PokemonType };
+type Stat = {
+  base_stat: number;
+  effort: number;
+  stat: {
+    name: string;
+    url: string;
+  };
+};
+
+type Stats = Stat[];
+
+type Ability = {
+  ability: {
+    name: string;
+    url: string;
+  };
+  is_hidden: boolean;
+  slot: number;
+};
+
+type Abilities = Ability[];
+
+export type { Pokemon, PokemonType, Stat, Stats, Ability, Abilities };

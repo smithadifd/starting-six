@@ -13,11 +13,11 @@ interface PokemonCardProps {
   isSelected?: boolean;
   className?: string;
   filter?: string;
+  onClick?: () => void;
 }
 
-function PokemonCard({ pokemon, isSelected = false, className = "", filter } : PokemonCardProps) {
+function PokemonCard({ pokemon, isSelected = false, className = "", filter, onClick } : PokemonCardProps) {
   const navigate = useNavigate();
-  const onClickHandler = () => navigate(`../${pokemon.name}`);
   const classes = getClassNames(
     "m-2 flex flex-col rounded border border-slate-300 w-52 h-52 bg-white",
     className
@@ -25,7 +25,7 @@ function PokemonCard({ pokemon, isSelected = false, className = "", filter } : P
 
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
-    <div className={classes} onClick={onClickHandler}>
+    <div className={classes} onClick={onClick}>
       <PokemonHeader
         pokemon={pokemon}
         className="flex grow"
