@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 
 import { useGetPokemonByNameQuery } from "services/api";
 import { Pokemon as PokemonType } from "lib/types";
+import { useAppDispatch } from "app/hooks";
 
 import Modal from 'components/ui/Modal';
 import PokemonDetails from "components/pokemon/PokemonDetails";
+import SelectPokemonButton from "components/pokemon/SelectPokemonButton";
 
 interface PokemonDetailsModalProps {
   name: string;
@@ -16,9 +18,15 @@ interface PokemonDetailsModalProps {
  * TODO: Convert original component over to be TypeScript and prop driven.
  */
 const PokemonDetailsModal = ({ name, isOpen, onClose} : PokemonDetailsModalProps) => {
+  const dispatch = useAppDispatch();
   const { data } = useGetPokemonByNameQuery(name);
-
   const [pokemon, setPokemon] = useState<PokemonType | null>(null);
+
+  const onClickHandler = ({ isAdding }: { isAdding: boolean }) => {
+    const action = isAdding ? "pokemon/addPokemon" : "pokemon/removePokemon";
+    dispatch({ type: action, payload: pokemon });
+    onClose();
+  };
 
   useEffect(() => {
     if (data) {
@@ -30,18 +38,14 @@ const PokemonDetailsModal = ({ name, isOpen, onClose} : PokemonDetailsModalProps
   return (
     pokemon && (
       <Modal isOpen={isOpen} onClose={onClose}>
-        <PokemonDetails pokemon={pokemon} />
-        {/* <div className="flex flex-col">
-          <div className="flex flex-row justify-between">
-            <div className="flex flex-col">
-              <h1 className="text-4xl font-bold">Pokemon Name</h1>
-              <h2 className="text-2xl font-bold">Pokemon Number</h2>
-            </div>
-            <div className="flex flex-col">
-              <span>Data here</span>
-            </div>
+        <PokemonDetails pokemon={pokemon}>
+          <div className="flex justify-end p-4 align-middle">
+            <button className="btn mr-4" type="button" onClick={onClose}>
+              Close
+            </button>
+            <SelectPokemonButton name={name} onClickHandler={onClickHandler} />
           </div>
-        </div> */}
+        </PokemonDetails>
       </Modal>
     )
   )

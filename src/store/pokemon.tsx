@@ -32,8 +32,8 @@ export const pokemonSlice = createSlice({
       );
     },
     removePokemon: (state, action) => {
-      const pokemonName:string = action.payload;
-      delete state.chosenPokemon[pokemonName];
+      const pokemon:Pokemon = action.payload;
+      delete state.chosenPokemon[pokemon.name];
       localStorage.setItem(
         "chosenPokemon",
         JSON.stringify(state.chosenPokemon)
