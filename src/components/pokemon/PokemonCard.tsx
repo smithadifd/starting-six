@@ -23,6 +23,7 @@ function PokemonCard({ pokemon, isSelected = false, className = "", filter, onCl
     className
   );
 
+  // REFACTOR: Use card component
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div className={classes} onClick={onClick}>

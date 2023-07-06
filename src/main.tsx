@@ -13,6 +13,7 @@ import {
 import { createRoot } from "react-dom/client";
 
 import PokemonGrid from "components/pokemon/PokemonGrid";
+import Team from "components/pokemon/Team";
 
 const container = document.getElementById("root");
 
@@ -27,8 +28,12 @@ const router = createBrowserRouter([
         index: true,
         element: <PokemonGrid />,
       },
+      {
+        path: "/team",
+        element: <Team />,
+      },
     ],
-  }
+  },
 ]);
 const root = createRoot(container);
 

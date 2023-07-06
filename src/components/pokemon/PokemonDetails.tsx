@@ -1,4 +1,3 @@
-// import Card from "components/ui/Card";
 import PokemonHeader from "components/pokemon/PokemonHeader";
 import Sprite from "components/pokemon/Sprite";
 import Stats from "components/pokemon/Stats";
@@ -25,7 +24,6 @@ function PokemonDetails({
   children,
 } : PokemonDetailsProps) {
   return (
-    // <Card className={className}>
     <div>
       <PokemonHeader pokemon={pokemon} />
       <div className="mx-auto flex h-full flex-col px-4">
@@ -51,7 +49,6 @@ function PokemonDetails({
         )} */}
       </div>
       {children}
-      {/* </Card> */}
     </div>
   );
 }
