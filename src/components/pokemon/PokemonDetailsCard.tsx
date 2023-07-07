@@ -1,11 +1,18 @@
 import { Pokemon as PokemonType } from "lib/types";
+import { getClassNames } from "lib/utils";
 
 import Card from "components/ui/Card";
 import PokemonDetails from "components/pokemon/PokemonDetails";
 
-const PokemonDetailsCard = ({ pokemon } : { pokemon: PokemonType }) => {
+interface PokemonDetailsCardProps {
+  pokemon: PokemonType;
+  className?: string[];
+}
+
+const PokemonDetailsCard = ({ pokemon, className } : PokemonDetailsCardProps) => {
+  const classes = getClassNames(className);
   return (
-    <Card>
+    <Card className={classes}>
       <PokemonDetails pokemon={pokemon} />
     </Card>
   )
