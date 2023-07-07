@@ -24,9 +24,11 @@ const Tabs = ({ children } : TabsProps) => {
 
     return (
         <div className="flex flex-col">
-            <div className="flex flex-row justify-center">
+          <div className="flex justify-center">
+            <div className="flex flex-row shrink border border-black-1 rounded">
                 {childrenArray.map((child, i) => (createTab(child, i)))}
             </div>
+          </div>
             <div className="flex flex-col">
                 {activeChild}
             </div>
