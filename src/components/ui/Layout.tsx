@@ -5,11 +5,10 @@ type LayoutProps = {
 };
 
 const Layout = ({ children }: LayoutProps) => {
-  const contentHeight = 'calc(100vh - 114px)';
   return (
     <div className='h-screen'>
       <Header />
-      <main className='bg-yellow-50' style={{height: contentHeight}}>{children}</main>
+      <main className='bg-yellow-50' style={{height: 'workspaceHeight'}}>{children}</main>
       {/* <Footer /> */}
     </div>
   );

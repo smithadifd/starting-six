@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+$headerHeight: 114px;
+$workspaceHeight: calc(100vh - $headerHeight);
