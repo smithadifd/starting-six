@@ -13,7 +13,7 @@ interface PokemonTeamProps {
  */
 function PokemonTeam({ pokemonNames = [], className = "" }: PokemonTeamProps) {
   const classes = getClassNames(
-    "flex rounded border border-black bg-zinc-50",
+    "flex rounded border border-black bg-neutral-50",
     className
   );
   return (

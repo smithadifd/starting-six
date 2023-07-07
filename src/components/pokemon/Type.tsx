@@ -26,7 +26,7 @@ function Type({ type, effectiveness, className } : TypeProps) {
 
   return (
     <Pill
-      textColor={`text-slate-50 ${height} ${width} justify-center`}
+      textColor={`text-neutral-50 ${height} ${width} justify-center`}
       backgroundColor={color}
       className={className}
     >

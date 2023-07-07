@@ -39,8 +39,9 @@ function PokemonHeader({ pokemon, isSelected = false, filter } : PokemonHeaderPr
     }
   }
 
-  const bgColor = isSelected ? "bg-amber-300" : "bg-slate-300";
-  const classNames = `flex justify-between items-center rounded-t p-4 ${bgColor}`;
+  const bgColor = isSelected ? "bg-amber-300" : "bg-sky-500";
+  const textColor = isSelected ? "text-neutral-900" : "text-neutral-50";
+  const classNames = `flex justify-between items-center rounded-t p-4 ${bgColor} ${textColor}`;
 
   return (
     <div className={classNames}>

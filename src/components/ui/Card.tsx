@@ -10,7 +10,7 @@ interface CardProps {
 
 const Card = ({ children, className, bgColor = 'white' } : CardProps) => {
   const classes = getClassNames(
-    "bg-white shadow-md rounded-md p-4",
+    "bg-white shadow-md rounded-md",
     className,
     `bg-${bgColor}`,
   );

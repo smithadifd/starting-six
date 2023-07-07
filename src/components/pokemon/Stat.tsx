@@ -7,7 +7,7 @@ interface StatProps {
 const Stat = ({ stat } : StatProps) => {
   const displayName = stat.stat.name.replace("-", " ");
   return (
-    <div className="prose prose-slate flex justify-between">
+    <div className="prose prose-neutral flex justify-between">
       <span className="mr-2 whitespace-nowrap text-right capitalize">
         {displayName}:
       </span>

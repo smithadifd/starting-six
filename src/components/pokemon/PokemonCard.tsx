@@ -19,7 +19,7 @@ interface PokemonCardProps {
 function PokemonCard({ pokemon, isSelected = false, className = "", filter, onClick } : PokemonCardProps) {
   const navigate = useNavigate();
   const classes = getClassNames(
-    "m-2 flex flex-col rounded border border-slate-300 w-52 h-52 bg-white",
+    "m-2 flex flex-col rounded border border-neutral-300 w-52 h-52 bg-neutral-50",
     className
   );
 

@@ -1,14 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useAppSelector } from "app/hooks";
 import { VirtuosoGrid } from "react-virtuoso";
 
 import { useGetPokemonListQuery } from "services/api";
-
+import { PokemonDetailsContext } from "lib/contexts";
 import { Pokemon } from "lib/types";
 
 import Filter from "components/ui/Filter";
 import PkCard from "components/pokemon/PokemonCard";
-import PokemonDetailsModal from "components/pokemon/PokemonDetailsModal";
 
 interface PokemonCardProps {
   pokemon: Pokemon;
@@ -22,10 +21,11 @@ const PokemonCard = ({ pokemon, isSelected = false, filter, onClick } : PokemonC
 }
 
 /**
- * Consists of a list of PokemonCard components, which is a list of a Pokemon's name, number, and sprite.
+ * Consists of a grid of PokemonCard components, which renders a Pokemon's name, number, and sprite.
  */
 const PokemonGrid = () => {
   const { data } = useGetPokemonListQuery();
+  const onPokemonClick = useContext(PokemonDetailsContext);
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
 
   const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
@@ -34,12 +34,6 @@ const PokemonGrid = () => {
 
   const filterHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilter(e.target.value);
-  };
-  const onPokemonClick = (pokemonName: String) => {
-    setSelectedPokemonName(pokemonName);
-  };
-  const onClose = () => {
-    setSelectedPokemonName(null);
   };
 
   useEffect(() => {
@@ -65,7 +59,9 @@ const PokemonGrid = () => {
         style={{ height: "calc(100vh - 156px)" }}
         listClassName="flex flex-wrap justify-center"
       />
-      <PokemonDetailsModal name={selectedPokemonName} isOpen={Boolean(selectedPokemonName)} onClose={onClose} />
+      {/* selectedPokemonName && (
+        <PokemonDetailsModal name={selectedPokemonName} isOpen={Boolean(selectedPokemonName)} onClose={onClose} />
+      ) */}
     </div>
   );
 }
