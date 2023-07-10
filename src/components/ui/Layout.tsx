@@ -8,7 +8,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className='h-screen'>
       <Header />
-      <main className='bg-yellow-50' style={{height: 'workspaceHeight'}}>{children}</main>
+      <main className='mt-4'>{children}</main>
       {/* <Footer /> */}
     </div>
   );

@@ -4,15 +4,18 @@ import { getClassNames } from "lib/utils";
 
 interface CardProps {
   children: React.ReactNode;
-  bgColor?: string;
-  className?: string[];
+  color?: string;
+  className?: string[] | string;
+  opacity?: number;
 }
 
-const Card = ({ children, className, bgColor = 'white' } : CardProps) => {
+const Card = ({ children, className, color = 'white', opacity } : CardProps) => {
+
   const classes = getClassNames(
-    "bg-white shadow-md rounded-md",
+    "shadow-md rounded-md",
+    `bg-${color}`,
+    opacity && `bg-opacity-${opacity}`,
     className,
-    `bg-${bgColor}`,
   );
   return (
     <div className={classes}>

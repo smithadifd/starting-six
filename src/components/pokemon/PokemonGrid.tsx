@@ -6,6 +6,7 @@ import { useGetPokemonListQuery } from "services/api";
 import { PokemonDetailsContext } from "lib/contexts";
 import { Pokemon } from "lib/types";
 
+import Card from "components/ui/Card";
 import Filter from "components/ui/Filter";
 import PkCard from "components/pokemon/PokemonCard";
 
@@ -29,7 +30,6 @@ const PokemonGrid = () => {
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
 
   const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
-  const [selectedPokemonName, setSelectedPokemonName] = useState<String | null>(null);
   const [filter, setFilter] = useState<string>("");
 
   const filterHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,8 +44,11 @@ const PokemonGrid = () => {
     setPokemonList(filteredPokemon);
   }, [data, filter]);
   return (
-    <div className="flex flex-col">
-      <Filter filter={filter} handler={filterHandler} />
+    // <Card className="flex flex-col mx-4 backdrop-blur backdrop-opacity-10" color="white/30">
+    <Card className="flex flex-col mx-4 backdrop-blur backdrop-opacity-50">
+      <div className="flex justify-center rounded p-4">
+        <Filter filter={filter} handler={filterHandler} className="shadow" />
+      </div>
       <VirtuosoGrid
         data={pokemonList}
         itemContent={(index, p) => {
@@ -59,10 +62,7 @@ const PokemonGrid = () => {
         style={{ height: "calc(100vh - 156px)" }}
         listClassName="flex flex-wrap justify-center"
       />
-      {/* selectedPokemonName && (
-        <PokemonDetailsModal name={selectedPokemonName} isOpen={Boolean(selectedPokemonName)} onClose={onClose} />
-      ) */}
-    </div>
+    </Card>
   );
 }
 

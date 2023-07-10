@@ -29,15 +29,15 @@ function App(): JSX.Element {
   }, []);
 
   return (
-    <div className="App">
+    <div className="App bg-gradient-to-r from-yellow-50 to-sky-50">
       <PokemonDetailsContext.Provider value={onPokemonClick}>
         <Layout>
           <Outlet />
         </Layout>
       </PokemonDetailsContext.Provider>
-      selectedPokemonName && (
+      {selectedPokemon && (
         <PokemonDetailsModal name={selectedPokemon} isOpen={Boolean(selectedPokemon)} onClose={onClose} />
-      )
+      )}
     </div>
   );
 }

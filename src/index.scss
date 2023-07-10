@@ -4,3 +4,7 @@
 
 $headerHeight: 114px;
 $workspaceHeight: calc(100vh - $headerHeight);
+
+main {
+  height: $workspaceHeight;
+}

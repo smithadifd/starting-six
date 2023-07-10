@@ -1,9 +1,12 @@
+
+import { getClassNames } from "lib/utils";
 interface FilterProps {
   filter: string;
+  className?: string[] | string;
   handler: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Filter = ({ filter, handler } : FilterProps) => {
+const Filter = ({ filter, handler, className } : FilterProps) => {
   return (
     <input
       name="pokemonFilter"
@@ -11,7 +14,7 @@ const Filter = ({ filter, handler } : FilterProps) => {
       type="text"
       placeholder="Search Pokemon by name or number"
       onChange={handler}
-      className="w-full rounded border border-gray-300 p-2 shadow-sm"
+      className={getClassNames('w-full rounded border border-gray-300 p-2', className)}
     />
   );
 }
