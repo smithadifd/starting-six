@@ -59,4 +59,25 @@ const typeColors = (type: string) : string => {
   return colors[type];
 };
 
-export { getClassNames, getNumberFromUrl, typeColors };
+const pokemonTypes = () => [
+  "normal",
+  "fire",
+  "water",
+  "electric",
+  "grass",
+  "ice",
+  "fighting",
+  "poison",
+  "ground",
+  "flying",
+  "psychic",
+  "bug",
+  "rock",
+  "ghost",
+  "dragon",
+  "dark",
+  "steel",
+  "fairy",
+];
+
+export { getClassNames, getNumberFromUrl, typeColors, pokemonTypes };

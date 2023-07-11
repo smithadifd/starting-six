@@ -7,12 +7,12 @@ interface PillProps {
   className?: string;
 }
 
-function Pill({
+const Pill = ({
   children,
   textColor: txtClr,
   backgroundColor: bgClr,
   className,
-} : PillProps) {
+} : PillProps) => {
   const textColor = txtClr || "text-gray-800";
   const backgroundColor = bgClr || "bg-gray-100";
   const defaultClasses =

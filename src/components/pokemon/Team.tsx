@@ -1,4 +1,4 @@
-import { useAppSelector } from "app/hooks";
+import { useAppSelector } from "hooks/app";
 
 import Tabs from "components/ui/Tabs";
 import Card from "components/ui/Card";

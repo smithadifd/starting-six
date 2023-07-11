@@ -1,4 +1,4 @@
-import { useAppSelector } from "app/hooks";
+import { useAppSelector } from "hooks/app";
 
 import { getNumberFromUrl } from "lib/utils";
 import { Pokemon } from "lib/types";
@@ -12,7 +12,7 @@ interface PokemonHeaderProps {
   filter?: string;
 }
 
-function PokemonHeader({ pokemon, isSelected = false, filter } : PokemonHeaderProps) {
+const PokemonHeader = ({ pokemon, isSelected = false, filter } : PokemonHeaderProps) => {
   const number = pokemon.id || getNumberFromUrl(pokemon.url);
   const withPadding = (n:number) => n.toString().padStart(3, "0");
   const text = `#${number && withPadding(number)} ${pokemon.name}`;

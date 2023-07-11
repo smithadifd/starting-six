@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 
-import { useAppDispatch } from "app/hooks";
+import { useAppDispatch } from "hooks/app";
 import { PokemonDetailsContext } from "lib/contexts";
 
 import Layout from "components/ui/Layout";

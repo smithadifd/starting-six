@@ -9,13 +9,13 @@ interface SpriteProps {
   className?: string[];
 }
 
-function Sprite({
+const Sprite = ({
   alt,
   number,
   rounded = false,
   color = null,
   className = [],
-}: SpriteProps) {
+}: SpriteProps) => {
   let url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${number}.png`;
   let classes = getClassNames(className);
 

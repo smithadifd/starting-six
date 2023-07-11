@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 import { useGetPokemonByNameQuery } from "services/api";
 import { Pokemon as PokemonType } from "lib/types";
-import { useAppDispatch } from "app/hooks";
+import { useAppDispatch } from "hooks/app";
 
 import Modal from 'components/ui/Modal';
 import PokemonDetails from "components/pokemon/PokemonDetails";

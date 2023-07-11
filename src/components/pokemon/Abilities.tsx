@@ -6,7 +6,7 @@ interface AbilitiesProps {
   abilities: AbilitiesType;
 }
 
-function Abilities({ abilities } : AbilitiesProps) {
+const Abilities = ({ abilities } : AbilitiesProps) => {
   return (
     <div className="flex flex-wrap justify-center">
       {abilities.map((ability) => (

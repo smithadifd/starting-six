@@ -7,7 +7,7 @@ interface AbilityProps {
   className?: string;
 }
 
-function Ability({ ability, className } : AbilityProps) {
+const Ability = ({ ability, className } : AbilityProps) => {
   const formattedAbility = ability.ability.name.replace("-", " ");
   return (
     <Pill className={className}>

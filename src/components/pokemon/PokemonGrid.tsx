@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useAppSelector } from "app/hooks";
+import { useAppSelector } from "hooks/app";
 import { VirtuosoGrid } from "react-virtuoso";
 
 import { useGetPokemonListQuery } from "services/api";

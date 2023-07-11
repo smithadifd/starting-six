@@ -2,8 +2,8 @@ import PokemonHeader from "components/pokemon/PokemonHeader";
 import Sprite from "components/pokemon/Sprite";
 import Stats from "components/pokemon/Stats";
 import Abilities from "components/pokemon/Abilities";
-// import TypeEffectivenessContainer from "components/common/TypeEffectivenessContainer.js";
-// import PokemonDetailsTabs from "components/common/PokemonDetailsTabs";
+import TypeEffectivenessContainer from "components/pokemon/TypeEffectivenessContainer.js";
+import PokemonDetailsTabs from "components/pokemon/PokemonDetailsTabs";
 
 interface PokemonDetailsProps {
   pokemon: any;
@@ -16,13 +16,13 @@ interface PokemonDetailsProps {
 /**
  * Modal overlay that shows details about the Pokemon the user selected.
  */
-function PokemonDetails({
+const PokemonDetails = ({
   pokemon,
   className = [],
   showAdditionalDetails = true,
   showNormal = false,
   children,
-} : PokemonDetailsProps) {
+} : PokemonDetailsProps) => {
   return (
     <div>
       <PokemonHeader pokemon={pokemon} />
@@ -34,7 +34,7 @@ function PokemonDetails({
           </div>
           <Stats stats={pokemon.stats} />
         </div>
-        {/* {showAdditionalDetails ? (
+        {showAdditionalDetails ? (
           <PokemonDetailsTabs
             pokemon={pokemon}
             className="mx-2"
@@ -46,7 +46,7 @@ function PokemonDetails({
             className="mb-2 max-h-80 overflow-auto"
             showNormal={showNormal}
           />
-        )} */}
+        )}
       </div>
       {children}
     </div>

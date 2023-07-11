@@ -1,4 +1,4 @@
-import { useAppSelector } from "app/hooks";
+import { useAppSelector } from "hooks/app";
 
 interface SelectPokemonButtonProps {
   name: string;
