@@ -1,6 +1,5 @@
-import { useAppSelector } from "hooks/app";
+// import { useAppSelector } from "hooks/app";
 import { Pokemon as PokemonType } from "lib/types";
-import { getClassNames } from "lib/utils";
 
 import Tabs from "components/ui/Tabs";
 import TypeEffectivenessContainer from "components/pokemon/TypeEffectivenessContainer";
@@ -16,7 +15,7 @@ const PokemonDetailsTabs = ({
   pokemon,
   showNormal,
 }: PokemonDetailsTabsProps) => {
-  const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
+  // const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
   // const hasPokemon = Object.keys(chosenPokemon).length > 0;
   const tabHeaders = ["Effectiveness", "Moves", "Team Stats"];
 

@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 // import { faStar } from "@fortawesome/free-solid-svg-icons";
 
@@ -23,7 +22,6 @@ const PokemonCard = ({
   filter,
   onClick,
 }: PokemonCardProps) => {
-  const navigate = useNavigate();
   const classes = getClassNames(
     "m-2 flex flex-col rounded border border-neutral-300 w-52 h-52 bg-neutral-50",
     className

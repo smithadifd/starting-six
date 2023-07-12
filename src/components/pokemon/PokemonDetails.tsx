@@ -7,7 +7,6 @@ import PokemonDetailsTabs from "components/pokemon/PokemonDetailsTabs";
 
 interface PokemonDetailsProps {
   pokemon: any;
-  className?: string[];
   showAdditionalDetails?: boolean;
   showNormal?: boolean;
   children?: React.ReactNode;
@@ -18,7 +17,6 @@ interface PokemonDetailsProps {
  */
 const PokemonDetails = ({
   pokemon,
-  className = [],
   showAdditionalDetails = true,
   showNormal = false,
   children,

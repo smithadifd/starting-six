@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 
 import { useAppSelector } from "hooks/app";
@@ -11,7 +10,6 @@ interface SpriteButtonProps {
 }
 
 const SpriteButton = ({ pokemonName }: SpriteButtonProps) => {
-  const navigate = useNavigate();
   const onPokemonClick = useContext(PokemonDetailsContext);
 
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon)[

@@ -1,5 +1,3 @@
-import { useAppSelector } from "hooks/app";
-
 import { getNumberFromUrl } from "lib/utils";
 import { Pokemon } from "lib/types";
 
@@ -10,14 +8,12 @@ interface PokemonHeaderProps {
   isSelected?: boolean;
   className?: string;
   filter?: string;
-  children?: React.ReactNode;
 }
 
 const PokemonHeader = ({
   pokemon,
   isSelected = false,
   filter,
-  children,
 }: PokemonHeaderProps) => {
   const number = pokemon.id || getNumberFromUrl(pokemon.url);
   const withPadding = (n: number) => n.toString().padStart(3, "0");

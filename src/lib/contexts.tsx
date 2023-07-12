@@ -1,3 +1,5 @@
 import { createContext } from "react";
 
-export const PokemonDetailsContext = createContext<Function>(() => {});
+type ContextFunction = (pokemonName: string) => void;
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export const PokemonDetailsContext = createContext<ContextFunction>(() => {});
