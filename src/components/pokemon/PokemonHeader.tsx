@@ -10,9 +10,10 @@ interface PokemonHeaderProps {
   isSelected?: boolean;
   className?: string;
   filter?: string;
+  children?: React.ReactNode;
 }
 
-const PokemonHeader = ({ pokemon, isSelected = false, filter } : PokemonHeaderProps) => {
+const PokemonHeader = ({ pokemon, isSelected = false, filter, children } : PokemonHeaderProps) => {
   const number = pokemon.id || getNumberFromUrl(pokemon.url);
   const withPadding = (n:number) => n.toString().padStart(3, "0");
   const text = `#${number && withPadding(number)} ${pokemon.name}`;

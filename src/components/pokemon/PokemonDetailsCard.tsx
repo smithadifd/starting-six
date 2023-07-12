@@ -6,7 +6,7 @@ import PokemonDetails from "components/pokemon/PokemonDetails";
 
 interface PokemonDetailsCardProps {
   pokemon: PokemonType;
-  className?: string[];
+  className?: string[] | string;
 }
 
 const PokemonDetailsCard = ({ pokemon, className } : PokemonDetailsCardProps) => {

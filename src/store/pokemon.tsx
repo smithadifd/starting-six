@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "store";
 
-type Pokemon = { name: string, id: number };
+import { Pokemon } from "lib/types";
+
 type ChosenPokemon = { [key: string]: Pokemon };
 
 interface PokemonState {

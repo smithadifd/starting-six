@@ -9,8 +9,8 @@ import PokemonDetails from "components/pokemon/PokemonDetails";
 import SelectPokemonButton from "components/pokemon/SelectPokemonButton";
 
 interface PokemonDetailsModalProps {
-  name: String;
-  isOpen: Boolean;
+  name: string;
+  isOpen: boolean;
   onClose: () => void;
 }
 

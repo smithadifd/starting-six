@@ -9,9 +9,9 @@ import PokemonDetailsModal from "components/pokemon/PokemonDetailsModal";
 
 function App(): JSX.Element {
   const dispatch = useAppDispatch();
-  const [selectedPokemon, setSelectedPokemon] = useState<String | null>(null);
+  const [selectedPokemon, setSelectedPokemon] = useState<string | null>(null);
 
-  const onPokemonClick = (pokemonName: String) => {
+  const onPokemonClick = (pokemonName: string) => {
     console.log('pokemonName', pokemonName);
     setSelectedPokemon(pokemonName);
   };

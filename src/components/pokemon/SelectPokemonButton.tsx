@@ -2,7 +2,7 @@ import { useAppSelector } from "hooks/app";
 
 interface SelectPokemonButtonProps {
   name: string;
-  onClickHandler: ({ isAdding }: { isAdding: boolean }) => () => void;
+  onClickHandler: ({ isAdding }: { isAdding: boolean }) => void;
 }
 
 const SelectPokemonButton = ({ name, onClickHandler } : SelectPokemonButtonProps) => {

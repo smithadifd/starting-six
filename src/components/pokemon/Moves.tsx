@@ -5,7 +5,7 @@ import { Moves as MovesType } from "lib/types";
 import Move from "components/pokemon/Move";
 
 interface MovesProps {
-  moves: MovesType[];
+  moves: MovesType;
 }
 
 /**

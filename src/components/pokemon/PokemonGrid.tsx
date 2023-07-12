@@ -59,9 +59,9 @@ const PokemonGrid = () => {
             onClick: () => onPokemonClick(p.name),
           });
         }}
-        style={{ height: "calc(100vh - 156px)" }}
+        style={{ height: "calc(100vh - 205px)" }}
         listClassName="flex flex-wrap justify-center"
-      />
+        />
     </Card>
   );
 }

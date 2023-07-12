@@ -37,7 +37,6 @@ const PokemonDetails = ({
         {showAdditionalDetails ? (
           <PokemonDetailsTabs
             pokemon={pokemon}
-            className="mx-2"
             showNormal={showNormal}
           />
         ) : (

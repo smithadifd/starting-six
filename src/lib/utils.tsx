@@ -17,8 +17,8 @@ const getClassNames = (...args: any): string => {
     }
 
     if (type === "object") {
-      for (const key in arg) {
-        if (Object.hasOwn(arg, key) && arg[key]) classes.push(key);
+      for (const key of Object.keys(arg)) {
+        if (Object.hasOwnProperty.call(arg, key) && arg[key]) classes.push(key);
       }
     }
   }
@@ -59,7 +59,8 @@ const typeColors = (type: string) : string => {
   return colors[type];
 };
 
-const pokemonTypes = () => [
+type PokemonTypes = () => string[];
+const pokemonTypes : PokemonTypes = () => [
   "normal",
   "fire",
   "water",

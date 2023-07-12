@@ -1,4 +1,4 @@
-import { Pokemon as PokemonType } from "lib/types";
+import { Pokemon as PokemonType, FullType } from "lib/types";
 import { pokemonTypes } from "lib/utils";
 import { useGetTypeByNameQuery } from "services/api";
 
@@ -8,17 +8,24 @@ export const useEffectiveness = (pokemon : PokemonType) => {
   const { data: typeDetails2 } = useGetTypeByNameQuery(type2?.type?.name, {
     skip: !type2,
   });
-  const createActionDetails = () =>
-    pokemonTypes().reduce((acc, type) => {
-      acc[type] = 1;
-      return acc;
-    }, {});
+  const createActionDetails = () => {
+    interface ActionDetail {
+      [key: string]: number;
+    }
 
-  const getActions = (details1, details2) => {
+    const actionDetail : ActionDetail = {};
+    const types = pokemonTypes();
+    for (const type of types) {
+      actionDetail[type] = 1;
+    }
+    return actionDetail;
+  };
+
+  const getActions = (details1: FullType, details2: FullType) => {
     // const actions = { offense: createActionDetails(), defense: createActionDetails()};
     const actions = { defense: createActionDetails() };
     // const offensiveKeys = ['double_damage_to', 'half_damage_to', 'no_damage_to'];
-    const defensiveKeys = [
+    const defensiveKeys: string[] = [
       "double_damage_from",
       "half_damage_from",
       "no_damage_from",
@@ -33,9 +40,8 @@ export const useEffectiveness = (pokemon : PokemonType) => {
         //     else if (key === 'no_damage_to') actions.offense[t.name] *= 0;
         //   });
         // });
-
         defensiveKeys.forEach((key) => {
-          typeDetail.damage_relations[key].forEach((t) => {
+          typeDetail.damage_relations[key].forEach((t: FullType) => {
             if (key === "double_damage_from") actions.defense[t.name] *= 2;
             else if (key === "half_damage_from") actions.defense[t.name] *= 0.5;
             else if (key === "no_damage_from") actions.defense[t.name] *= 0;
