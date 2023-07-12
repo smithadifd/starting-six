@@ -11,7 +11,7 @@ interface MovesProps {
 /**
  * TODO: Use a library like popper.js to handle positioning.
  */
-const Moves = ({ moves } : MovesProps) => {
+const Moves = ({ moves }: MovesProps) => {
   const [search, setSearch] = useState("");
   const [filteredMoves, setFilteredMoves] = useState(moves);
 
@@ -41,6 +41,6 @@ const Moves = ({ moves } : MovesProps) => {
       </ul>
     </div>
   );
-}
+};
 
 export default Moves;

@@ -5,13 +5,23 @@ interface SelectPokemonButtonProps {
   onClickHandler: ({ isAdding }: { isAdding: boolean }) => void;
 }
 
-const SelectPokemonButton = ({ name, onClickHandler } : SelectPokemonButtonProps) => {
+const SelectPokemonButton = ({
+  name,
+  onClickHandler,
+}: SelectPokemonButtonProps) => {
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
 
   const pokemonNames = Object.keys(chosenPokemon);
   const fullTeam = pokemonNames.length === 6;
 
-  console.log('chosenPokemon', chosenPokemon, 'pokemonNames', pokemonNames, 'fullTeam', fullTeam);
+  console.log(
+    "chosenPokemon",
+    chosenPokemon,
+    "pokemonNames",
+    pokemonNames,
+    "fullTeam",
+    fullTeam
+  );
 
   const canAdd = !chosenPokemon[name];
   const text = canAdd ? "Add" : "Remove";
@@ -30,6 +40,6 @@ const SelectPokemonButton = ({ name, onClickHandler } : SelectPokemonButtonProps
       {text}
     </button>
   );
-}
+};
 
 export default SelectPokemonButton;

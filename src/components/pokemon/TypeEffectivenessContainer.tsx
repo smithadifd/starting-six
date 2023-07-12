@@ -14,7 +14,7 @@ const TypeEffectivenessContainer = ({
   pokemon,
   className,
   showNormal = false,
-} : TypeEffectivenessContainerProps) => {
+}: TypeEffectivenessContainerProps) => {
   const classes = getClassNames("flex flex-col py-2", className);
   const pokemonActions = useEffectiveness(pokemon);
   const normalTypes = Object.fromEntries(
@@ -42,6 +42,6 @@ const TypeEffectivenessContainer = ({
       <TypeEffectiveness title="Immune" effectiveTypes={immuneTypes} />
     </div>
   );
-}
+};
 
 export default TypeEffectivenessContainer;

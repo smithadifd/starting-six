@@ -1,4 +1,3 @@
-
 import { getClassNames } from "lib/utils";
 interface FilterProps {
   filter: string;
@@ -6,7 +5,7 @@ interface FilterProps {
   handler: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Filter = ({ filter, handler, className } : FilterProps) => {
+const Filter = ({ filter, handler, className }: FilterProps) => {
   return (
     <input
       name="pokemonFilter"
@@ -14,9 +13,12 @@ const Filter = ({ filter, handler, className } : FilterProps) => {
       type="text"
       placeholder="Search Pokemon by name or number"
       onChange={handler}
-      className={getClassNames('w-full rounded border border-gray-300 p-2', className)}
+      className={getClassNames(
+        "w-full rounded border border-gray-300 p-2",
+        className
+      )}
     />
   );
-}
+};
 
 export default Filter;

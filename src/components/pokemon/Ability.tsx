@@ -7,7 +7,7 @@ interface AbilityProps {
   className?: string;
 }
 
-const Ability = ({ ability, className } : AbilityProps) => {
+const Ability = ({ ability, className }: AbilityProps) => {
   const formattedAbility = ability.ability.name.replace("-", " ");
   return (
     <Pill className={className}>
@@ -16,6 +16,6 @@ const Ability = ({ ability, className } : AbilityProps) => {
       </span>
     </Pill>
   );
-}
+};
 
 export default Ability;

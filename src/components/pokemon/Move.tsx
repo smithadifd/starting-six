@@ -4,13 +4,13 @@ interface MoveProps {
   move: MoveType;
 }
 
-const Move = ({ move } : MoveProps) => {
+const Move = ({ move }: MoveProps) => {
   const formattedMove = move.move.name.replace("-", " ");
   return (
     <div>
       <span className="whitespace-nowrap capitalize">{formattedMove}</span>
     </div>
   );
-}
+};
 
 export default Move;

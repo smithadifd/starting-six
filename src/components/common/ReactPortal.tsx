@@ -10,7 +10,10 @@ interface ReactPortalProps {
  * Internal creation inspired by LogRocket
  * https://blog.logrocket.com/build-modal-with-react-portals/
  */
-const ReactPortal = ({ children, wrapperId = 'portal--wrapper' }: ReactPortalProps) => {
+const ReactPortal = ({
+  children,
+  wrapperId = "portal--wrapper",
+}: ReactPortalProps) => {
   const [wrapper, setWrapper] = useState<Element | null>(null);
 
   useLayoutEffect(() => {
@@ -19,8 +22,8 @@ const ReactPortal = ({ children, wrapperId = 'portal--wrapper' }: ReactPortalPro
 
     // Element by supplied ID does not exist, create one internally and append to body
     if (!el) {
-      el = document.createElement('div');
-      el.setAttribute('id', wrapperId);
+      el = document.createElement("div");
+      el.setAttribute("id", wrapperId);
       document.body.appendChild(el);
       systemCreated = true;
     }
@@ -31,11 +34,10 @@ const ReactPortal = ({ children, wrapperId = 'portal--wrapper' }: ReactPortalPro
       if (el && systemCreated) {
         document.body.removeChild(el);
       }
-    }
+    };
   }, [wrapperId]);
 
   return wrapper ? createPortal(children, wrapper) : null;
 };
-  
 
 export default ReactPortal;

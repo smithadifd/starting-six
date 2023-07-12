@@ -1,12 +1,12 @@
-import { Stats as StatsType } from 'lib/types';
+import { Stats as StatsType } from "lib/types";
 
-import Stat from 'components/pokemon/Stat';
+import Stat from "components/pokemon/Stat";
 
 interface StatsProps {
   stats: StatsType;
 }
 
-const Stats = ({ stats } : StatsProps) => {
+const Stats = ({ stats }: StatsProps) => {
   return (
     <ul>
       {stats.map((stat) => (
@@ -16,6 +16,6 @@ const Stats = ({ stats } : StatsProps) => {
       ))}
     </ul>
   );
-}
+};
 
 export default Stats;

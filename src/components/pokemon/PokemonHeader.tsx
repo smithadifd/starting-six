@@ -13,13 +13,16 @@ interface PokemonHeaderProps {
   children?: React.ReactNode;
 }
 
-const PokemonHeader = ({ pokemon, isSelected = false, filter, children } : PokemonHeaderProps) => {
+const PokemonHeader = ({
+  pokemon,
+  isSelected = false,
+  filter,
+  children,
+}: PokemonHeaderProps) => {
   const number = pokemon.id || getNumberFromUrl(pokemon.url);
-  const withPadding = (n:number) => n.toString().padStart(3, "0");
+  const withPadding = (n: number) => n.toString().padStart(3, "0");
   const text = `#${number && withPadding(number)} ${pokemon.name}`;
-  let title = (
-    <h3 className="prose prose-lg capitalize">{text}</h3>
-  );
+  let title = <h3 className="prose prose-lg capitalize">{text}</h3>;
 
   // If a filter is present, highlight the text around the match.
   if (filter) {
@@ -52,6 +55,6 @@ const PokemonHeader = ({ pokemon, isSelected = false, filter, children } : Pokem
       </div>
     </div>
   );
-}
+};
 
 export default PokemonHeader;

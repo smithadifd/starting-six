@@ -28,6 +28,6 @@ const Sprite = ({
   if (!number) classes += "align-center w-1/2";
 
   return <img src={url} alt={alt || String(number)} className={classes} />;
-}
+};
 
 export default Sprite;

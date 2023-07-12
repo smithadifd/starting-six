@@ -28,6 +28,6 @@ const SpriteButton = ({ pokemonName }: SpriteButtonProps) => {
       <Sprite number={chosenPokemon?.id} alt={chosenPokemon?.name} />
     </button>
   );
-}
+};
 
 export default SpriteButton;

@@ -22,7 +22,7 @@ const PokemonDetails = ({
   showAdditionalDetails = true,
   showNormal = false,
   children,
-} : PokemonDetailsProps) => {
+}: PokemonDetailsProps) => {
   return (
     <div>
       <PokemonHeader pokemon={pokemon} />
@@ -35,10 +35,7 @@ const PokemonDetails = ({
           <Stats stats={pokemon.stats} />
         </div>
         {showAdditionalDetails ? (
-          <PokemonDetailsTabs
-            pokemon={pokemon}
-            showNormal={showNormal}
-          />
+          <PokemonDetailsTabs pokemon={pokemon} showNormal={showNormal} />
         ) : (
           <TypeEffectivenessContainer
             pokemon={pokemon}
@@ -50,6 +47,6 @@ const PokemonDetails = ({
       {children}
     </div>
   );
-}
+};
 
 export default PokemonDetails;

@@ -12,7 +12,7 @@ function App(): JSX.Element {
   const [selectedPokemon, setSelectedPokemon] = useState<string | null>(null);
 
   const onPokemonClick = (pokemonName: string) => {
-    console.log('pokemonName', pokemonName);
+    console.log("pokemonName", pokemonName);
     setSelectedPokemon(pokemonName);
   };
   const onClose = () => {
@@ -36,7 +36,11 @@ function App(): JSX.Element {
         </Layout>
       </PokemonDetailsContext.Provider>
       {selectedPokemon && (
-        <PokemonDetailsModal name={selectedPokemon} isOpen={Boolean(selectedPokemon)} onClose={onClose} />
+        <PokemonDetailsModal
+          name={selectedPokemon}
+          isOpen={Boolean(selectedPokemon)}
+          onClose={onClose}
+        />
       )}
     </div>
   );

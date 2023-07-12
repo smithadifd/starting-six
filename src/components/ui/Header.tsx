@@ -10,7 +10,7 @@ import TeamOverview from "components/team/TeamOverview";
  */
 const Header = () => {
   const navigate = useNavigate();
-  
+
   const onClickHandler = () => navigate("/");
   const viewTeamHandler = () => navigate("/team");
 
@@ -18,7 +18,7 @@ const Header = () => {
   const pokemonNames = Object.keys(chosenPokemon);
 
   return (
-    <header className="flex place-items-center justify-between bg-red-700 px-4 max-[750px]:flex-wrap shadow-lg">
+    <header className="flex place-items-center justify-between bg-red-700 px-4 shadow-lg max-[750px]:flex-wrap">
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions  */}
       <h1
         className="title cursor-pointer text-white max-lg:text-xl"
@@ -44,6 +44,6 @@ const Header = () => {
       </div>
     </header>
   );
-}
+};
 
 export default Header;

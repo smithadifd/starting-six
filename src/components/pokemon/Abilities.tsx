@@ -6,7 +6,7 @@ interface AbilitiesProps {
   abilities: AbilitiesType;
 }
 
-const Abilities = ({ abilities } : AbilitiesProps) => {
+const Abilities = ({ abilities }: AbilitiesProps) => {
   return (
     <div className="flex flex-wrap justify-center">
       {abilities.map((ability) => (
@@ -14,6 +14,6 @@ const Abilities = ({ abilities } : AbilitiesProps) => {
       ))}
     </div>
   );
-}
+};
 
 export default Abilities;

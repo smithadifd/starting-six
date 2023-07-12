@@ -2,7 +2,7 @@ import { Pokemon as PokemonType, FullType } from "lib/types";
 import { pokemonTypes } from "lib/utils";
 import { useGetTypeByNameQuery } from "services/api";
 
-export const useEffectiveness = (pokemon : PokemonType) => {
+export const useEffectiveness = (pokemon: PokemonType) => {
   const [type1, type2] = pokemon.types;
   const { data: typeDetails1 } = useGetTypeByNameQuery(type1.type.name);
   const { data: typeDetails2 } = useGetTypeByNameQuery(type2?.type?.name, {
@@ -13,7 +13,7 @@ export const useEffectiveness = (pokemon : PokemonType) => {
       [key: string]: number;
     }
 
-    const actionDetail : ActionDetail = {};
+    const actionDetail: ActionDetail = {};
     const types = pokemonTypes();
     for (const type of types) {
       actionDetail[type] = 1;
@@ -50,7 +50,7 @@ export const useEffectiveness = (pokemon : PokemonType) => {
       }
     }
     return actions;
-  }
+  };
 
   return getActions(typeDetails1, typeDetails2);
-}
+};

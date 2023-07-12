@@ -9,13 +9,16 @@ interface PokemonDetailsCardProps {
   className?: string[] | string;
 }
 
-const PokemonDetailsCard = ({ pokemon, className } : PokemonDetailsCardProps) => {
+const PokemonDetailsCard = ({
+  pokemon,
+  className,
+}: PokemonDetailsCardProps) => {
   const classes = getClassNames(className);
   return (
     <Card className={classes}>
       <PokemonDetails pokemon={pokemon} />
     </Card>
-  )
+  );
 };
 
 export default PokemonDetailsCard;

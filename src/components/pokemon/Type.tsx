@@ -11,10 +11,10 @@ interface TypeProps {
 /**
  * Represents a pokemon type chip.
  */
-const Type = ({ type, effectiveness, className } : TypeProps) => {
+const Type = ({ type, effectiveness, className }: TypeProps) => {
   const color = type === "none" ? "bg-neutral-950" : typeColors(type);
   const hasEffectiveness = effectiveness || effectiveness === 0;
-  const translatedEffectiveness = (eff : number) => {
+  const translatedEffectiveness = (eff: number) => {
     if (eff === 0.25) return String.fromCharCode(188);
     if (eff === 0.5) return String.fromCharCode(189);
     return eff;
@@ -38,6 +38,6 @@ const Type = ({ type, effectiveness, className } : TypeProps) => {
       )}
     </Pill>
   );
-}
+};
 
 export default Type;

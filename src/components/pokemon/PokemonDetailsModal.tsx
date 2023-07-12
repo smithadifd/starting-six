@@ -4,7 +4,7 @@ import { useGetPokemonByNameQuery } from "services/api";
 import { Pokemon as PokemonType } from "lib/types";
 import { useAppDispatch } from "hooks/app";
 
-import Modal from 'components/ui/Modal';
+import Modal from "components/ui/Modal";
 import PokemonDetails from "components/pokemon/PokemonDetails";
 import SelectPokemonButton from "components/pokemon/SelectPokemonButton";
 
@@ -17,7 +17,11 @@ interface PokemonDetailsModalProps {
 /**
  * TODO: Convert original component over to be TypeScript and prop driven.
  */
-const PokemonDetailsModal = ({ name, isOpen, onClose} : PokemonDetailsModalProps) => {
+const PokemonDetailsModal = ({
+  name,
+  isOpen,
+  onClose,
+}: PokemonDetailsModalProps) => {
   const dispatch = useAppDispatch();
   const { data } = useGetPokemonByNameQuery(name);
   const [pokemon, setPokemon] = useState<PokemonType | null>(null);
@@ -34,7 +38,6 @@ const PokemonDetailsModal = ({ name, isOpen, onClose} : PokemonDetailsModalProps
     }
   }, [data]);
 
-  console.log('data', data);
   return (
     pokemon && (
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -48,7 +51,7 @@ const PokemonDetailsModal = ({ name, isOpen, onClose} : PokemonDetailsModalProps
         </PokemonDetails>
       </Modal>
     )
-  )
-}
+  );
+};
 
 export default PokemonDetailsModal;

@@ -16,7 +16,13 @@ interface PokemonCardProps {
   onClick?: () => void;
 }
 
-const PokemonCard = ({ pokemon, isSelected = false, className = "", filter, onClick } : PokemonCardProps) =>{
+const PokemonCard = ({
+  pokemon,
+  isSelected = false,
+  className = "",
+  filter,
+  onClick,
+}: PokemonCardProps) => {
   const navigate = useNavigate();
   const classes = getClassNames(
     "m-2 flex flex-col rounded border border-neutral-300 w-52 h-52 bg-neutral-50",
@@ -33,7 +39,7 @@ const PokemonCard = ({ pokemon, isSelected = false, className = "", filter, onCl
         isSelected={isSelected}
         filter={filter}
       />
-        {/* {isSelected && (
+      {/* {isSelected && (
           <FontAwesomeIcon icon={faStar} className="text-yellow-500" />
         )} */}
       {/* </PokemonHeader> */}
@@ -46,6 +52,6 @@ const PokemonCard = ({ pokemon, isSelected = false, className = "", filter, onCl
       </div>
     </div>
   );
-}
+};
 
 export default PokemonCard;

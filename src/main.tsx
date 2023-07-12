@@ -3,12 +3,9 @@ import "./index.scss";
 import App from "./App";
 import store from "./store/index";
 import { Provider } from "react-redux";
-import 'tailwindcss/tailwind.css'
+import "tailwindcss/tailwind.css";
 
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import { createRoot } from "react-dom/client";
 

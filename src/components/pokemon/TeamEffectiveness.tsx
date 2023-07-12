@@ -16,9 +16,11 @@ type Params = {
   pokemonName: string;
 };
 
-const TeamEffectiveness = ({ effectiveness = new Map() } : TeamEffectivnessProps) => {
+const TeamEffectiveness = ({
+  effectiveness = new Map(),
+}: TeamEffectivnessProps) => {
   const params = useParams<Params>();
-  const { pokemonName = '' } = params;
+  const { pokemonName = "" } = params;
   const { data: opponent } = useGetPokemonByNameQuery(pokemonName);
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
 
@@ -26,8 +28,7 @@ const TeamEffectiveness = ({ effectiveness = new Map() } : TeamEffectivnessProps
     return <div className="flex flex-col">N/A</div>;
   }
 
-
-  const getNumber = (name : string) => chosenPokemon[name].id;
+  const getNumber = (name: string) => chosenPokemon[name].id;
 
   return (
     <div className="flex flex-col">
@@ -48,14 +49,12 @@ const TeamEffectiveness = ({ effectiveness = new Map() } : TeamEffectivnessProps
               ))}
             </div>
             <FontAwesomeIcon icon={faArrowRight} />
-            {opponent && (
-              <Sprite number={opponent.id} alt={opponent.name} />
-            )}
+            {opponent && <Sprite number={opponent.id} alt={opponent.name} />}
           </div>
         );
       })}
     </div>
   );
-}
+};
 
 export default TeamEffectiveness;

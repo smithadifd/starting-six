@@ -11,7 +11,10 @@ interface PokemonTeamProps {
  * Sprites containing up-to 6 selected Pokemon with an action to navigate to a details page
  * showcasing details about the Pokemon the user selected.
  */
-const PokemonTeam = ({ pokemonNames = [], className = "" }: PokemonTeamProps) => {
+const PokemonTeam = ({
+  pokemonNames = [],
+  className = "",
+}: PokemonTeamProps) => {
   const classes = getClassNames(
     "flex rounded border border-black bg-neutral-50",
     className
@@ -24,6 +27,6 @@ const PokemonTeam = ({ pokemonNames = [], className = "" }: PokemonTeamProps) =>
       })}
     </div>
   );
-}
+};
 
 export default PokemonTeam;

@@ -26,17 +26,16 @@ const getClassNames = (...args: any): string => {
   return classes.join(" ");
 };
 
-const getNumberFromUrl = (url: string) : number | undefined => {
+const getNumberFromUrl = (url: string): number | undefined => {
   if (!url) return;
-  // return url.split("/")[url.split("/").length - 2];
   return Number(url.split("/")[url.split("/").length - 2]);
 };
 
-const typeColors = (type: string) : string => {
+const typeColors = (type: string): string => {
   interface Colors {
     [key: string]: string;
   }
-  const colors : Colors = {
+  const colors: Colors = {
     normal: "bg-gray-400",
     fire: "bg-red-500",
     water: "bg-blue-500",
@@ -60,7 +59,7 @@ const typeColors = (type: string) : string => {
 };
 
 type PokemonTypes = () => string[];
-const pokemonTypes : PokemonTypes = () => [
+const pokemonTypes: PokemonTypes = () => [
   "normal",
   "fire",
   "water",
