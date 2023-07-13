@@ -1,3 +1,6 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
+
 import { getNumberFromUrl } from "lib/utils";
 import { Pokemon } from "lib/types";
 
@@ -45,9 +48,12 @@ const PokemonHeader = ({
 
   return (
     <div className={classNames}>
-      <div className="flex items-center">
+      <div className="flex justify-between items-center w-full">
         {title}
         {pokemon.types && <Types types={pokemon.types} />}
+        {isSelected && (
+          <FontAwesomeIcon icon={faStar} className="text-yellow-500" />
+        )}
       </div>
     </div>
   );

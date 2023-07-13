@@ -1,9 +1,7 @@
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { faStar } from "@fortawesome/free-solid-svg-icons";
-
 import { getNumberFromUrl, getClassNames } from "lib/utils";
 import { Pokemon } from "lib/types";
 
+import Card from "components/ui/Card";
 import Sprite from "components/pokemon/Sprite";
 import PokemonHeader from "components/pokemon/PokemonHeader";
 
@@ -27,28 +25,25 @@ const PokemonCard = ({
     className
   );
 
-  // REFACTOR: Use card component
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
-    <div className={classes} onClick={onClick}>
-      <PokemonHeader
-        pokemon={pokemon}
-        className="flex grow"
-        isSelected={isSelected}
-        filter={filter}
-      />
-      {/* {isSelected && (
-          <FontAwesomeIcon icon={faStar} className="text-yellow-500" />
-        )} */}
-      {/* </PokemonHeader> */}
-      <div className="flex h-full items-center justify-center bg-zinc-50">
-        <Sprite
-          number={getNumberFromUrl(pokemon.url)}
-          alt={pokemon.name}
-          className={["w-1/2"]}
+    <button onClick={onClick}>
+      <Card className={classes}>
+        <PokemonHeader
+          pokemon={pokemon}
+          className="flex grow"
+          isSelected={isSelected}
+          filter={filter}
         />
-      </div>
-    </div>
+
+        <div className="flex h-full items-center justify-center bg-zinc-50">
+          <Sprite
+            number={getNumberFromUrl(pokemon.url)}
+            alt={pokemon.name}
+            className={["w-1/2"]}
+          />
+        </div>
+      </Card>
+    </button>
   );
 };
 

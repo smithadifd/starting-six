@@ -56,8 +56,7 @@ const PokemonGrid = () => {
     setPokemonList(filteredPokemon);
   }, [data, filter]);
   return (
-    // <Card className="flex flex-col mx-4 backdrop-blur backdrop-opacity-10" color="white/30">
-    <Card className="mx-4 flex flex-col backdrop-blur backdrop-opacity-50">
+    <Card className="mx-4 flex flex-col backdrop-blur bg-opacity-50">
       <div className="flex justify-center rounded p-4">
         <Filter filter={filter} handler={filterHandler} className="shadow" />
       </div>

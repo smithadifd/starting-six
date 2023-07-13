@@ -15,7 +15,7 @@ const Tabs = ({ children }: TabsProps) => {
       <button
         key={i}
         onClick={() => setActiveTab(i)}
-        className={`px-4 py-2 ${activeTab === i ? "text-wh bg-sky-500" : ""}`}
+        className={`px-4 py-2 ${activeTab === i ? "text-white bg-sky-500" : ""}`}
       >
         {child.props.title}
       </button>

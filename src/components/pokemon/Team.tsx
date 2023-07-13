@@ -8,8 +8,7 @@ const Team = () => {
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
 
   return (
-    // <Card className=" mx-4 backdrop-blur" color="transparent" opacity={50}>
-    <Card className="mx-4 flex flex-col p-4 backdrop-blur backdrop-opacity-30">
+    <Card className="mx-4 flex flex-col p-4 backdrop-blur bg-opacity-50">
       <Tabs>
         <div title="Team" className="flex flex-wrap">
           {Object.keys(chosenPokemon).map((pokemonName) => (
