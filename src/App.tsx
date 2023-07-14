@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Outlet } from "react-router-dom";
 
 import { useAppDispatch } from "hooks/app";
@@ -11,10 +11,9 @@ function App(): JSX.Element {
   const dispatch = useAppDispatch();
   const [selectedPokemon, setSelectedPokemon] = useState<string | null>(null);
 
-  const onPokemonClick = (pokemonName: string) => {
-    console.log("pokemonName", pokemonName);
+  const onPokemonClick = useCallback((pokemonName: string) => {
     setSelectedPokemon(pokemonName);
-  };
+  }, []);
   const onClose = () => {
     setSelectedPokemon(null);
   };

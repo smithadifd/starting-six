@@ -5,10 +5,7 @@ interface TypeEffectivenessProps {
   effectiveTypes: Record<string, number>; // TODO: Replace with more fitting type
 }
 
-const TypeEffectiveness = ({
-  title,
-  effectiveTypes,
-}: TypeEffectivenessProps) => {
+function TypeEffectiveness({ title, effectiveTypes }: TypeEffectivenessProps) {
   const typesList = Object.entries(effectiveTypes);
   return (
     <div className="my-2 flex flex-col">
@@ -31,6 +28,6 @@ const TypeEffectiveness = ({
       </div>
     </div>
   );
-};
+}
 
 export default TypeEffectiveness;

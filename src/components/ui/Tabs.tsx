@@ -5,7 +5,7 @@ interface TabsProps {
 }
 type Child = React.ReactElement<{ title: string }>;
 
-const Tabs = ({ children }: TabsProps) => {
+function Tabs({ children }: TabsProps) {
   const [activeTab, setActiveTab] = useState(0);
   const childrenArray = React.Children.toArray(children) as Child[];
   const activeChild = childrenArray[activeTab];
@@ -14,6 +14,7 @@ const Tabs = ({ children }: TabsProps) => {
     return (
       <button
         key={i}
+        type="button"
         onClick={() => setActiveTab(i)}
         className={`px-4 py-2 ${
           activeTab === i ? "bg-sky-500 text-white" : ""
@@ -34,6 +35,6 @@ const Tabs = ({ children }: TabsProps) => {
       <div className="mt-4 flex flex-col">{activeChild}</div>
     </div>
   );
-};
+}
 
 export default Tabs;

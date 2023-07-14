@@ -9,7 +9,7 @@ interface SpriteButtonProps {
   pokemonName: string;
 }
 
-const SpriteButton = ({ pokemonName }: SpriteButtonProps) => {
+function SpriteButton({ pokemonName }: SpriteButtonProps) {
   const onPokemonClick = useContext(PokemonDetailsContext);
 
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon)[
@@ -26,6 +26,6 @@ const SpriteButton = ({ pokemonName }: SpriteButtonProps) => {
       <Sprite number={chosenPokemon?.id} alt={chosenPokemon?.name} />
     </button>
   );
-};
+}
 
 export default SpriteButton;

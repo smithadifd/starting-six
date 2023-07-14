@@ -14,11 +14,11 @@ interface PokemonDetailsModalProps {
   onClose: () => void;
 }
 
-const PokemonDetailsModal = ({
+function PokemonDetailsModal({
   name,
   isOpen,
   onClose,
-}: PokemonDetailsModalProps) => {
+}: PokemonDetailsModalProps) {
   const dispatch = useAppDispatch();
   const { data } = useGetPokemonByNameQuery(name);
   const [pokemon, setPokemon] = useState<PokemonType | null>(null);
@@ -41,7 +41,7 @@ const PokemonDetailsModal = ({
         <PokemonDetails pokemon={pokemon}>
           <div className="flex justify-end p-4 align-middle">
             <button
-              className="btn mr-2 rounded px-4 py-2 font-medium hover:bg-neutral-200"
+              className="mr-2 rounded px-4 py-2 font-medium hover:bg-neutral-200"
               type="button"
               onClick={onClose}
             >
@@ -53,6 +53,6 @@ const PokemonDetailsModal = ({
       </Modal>
     )
   );
-};
+}
 
 export default PokemonDetailsModal;

@@ -9,10 +9,10 @@ interface TypeEffectivenessContainerProps {
   className?: string;
 }
 
-const TypeEffectivenessContainer = ({
+function TypeEffectivenessContainer({
   pokemon,
   className,
-}: TypeEffectivenessContainerProps) => {
+}: TypeEffectivenessContainerProps) {
   const classes = getClassNames("flex flex-col py-2overflow-auto", className);
   const pokemonActions = useEffectiveness(pokemon);
   const normalTypes = Object.fromEntries(
@@ -38,6 +38,6 @@ const TypeEffectivenessContainer = ({
       <TypeEffectiveness title="Immune" effectiveTypes={immuneTypes} />
     </div>
   );
-};
+}
 
 export default TypeEffectivenessContainer;

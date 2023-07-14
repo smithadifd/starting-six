@@ -13,11 +13,11 @@ interface PokemonDetailsProps {
 /**
  * Modal overlay that shows details about the Pokemon the user selected.
  */
-const PokemonDetails = ({
+function PokemonDetails({
   pokemon,
   showAdditionalDetails = true,
   children,
-}: PokemonDetailsProps) => {
+}: PokemonDetailsProps) {
   return (
     <div>
       <PokemonHeader pokemon={pokemon} />
@@ -38,6 +38,6 @@ const PokemonDetails = ({
       {children}
     </div>
   );
-};
+}
 
 export default PokemonDetails;

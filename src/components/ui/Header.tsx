@@ -8,7 +8,7 @@ import TeamOverview from "components/team/TeamOverview";
 /**
  * Persistant header showing application name as well as pokeballs representing the 6 selected Pokemon.
  */
-const Header = () => {
+function Header() {
   const navigate = useNavigate();
 
   const onClickHandler = () => navigate("/");
@@ -44,6 +44,6 @@ const Header = () => {
       </div>
     </header>
   );
-};
+}
 
 export default Header;

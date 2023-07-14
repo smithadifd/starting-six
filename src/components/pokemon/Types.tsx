@@ -6,7 +6,7 @@ interface PokemonTypesProps {
   types: PokemonType[];
 }
 
-const Types = ({ types }: PokemonTypesProps) => {
+function Types({ types }: PokemonTypesProps) {
   return (
     <div className="flex">
       {types.map((type) => (
@@ -14,6 +14,6 @@ const Types = ({ types }: PokemonTypesProps) => {
       ))}
     </div>
   );
-};
+}
 
 export default Types;

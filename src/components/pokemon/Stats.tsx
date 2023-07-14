@@ -6,7 +6,7 @@ interface StatsProps {
   stats: StatsType;
 }
 
-const Stats = ({ stats }: StatsProps) => {
+function Stats({ stats }: StatsProps) {
   return (
     <ul>
       {stats.map((stat) => (
@@ -16,6 +16,6 @@ const Stats = ({ stats }: StatsProps) => {
       ))}
     </ul>
   );
-};
+}
 
 export default Stats;

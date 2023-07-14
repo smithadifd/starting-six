@@ -4,6 +4,7 @@
         "es2021": true
     },
     "extends": [
+        "airbnb",
         "eslint:recommended",
         "plugin:react/recommended",
         "plugin:react-hooks/recommended",
@@ -21,15 +22,27 @@
     },
     "plugins": ["react", "@typescript-eslint", "jsx-a11y"],
     "rules": {
+        // TypeScript
         "@typescript-eslint/explicit-module-boundary-types": "off",
-        "import/extensions": "off",
-        "import/no-extraneous-dependencies": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        // JavaScript
         "no-continue": "off",
+        "no-param-reassign": "off",
+        "import/no-unresolved": "off",
+        "no-restricted-syntax": "off",
         "consistent-return": "off",
         "prefer-destructuring": "off",
+        // React
         "react/react-in-jsx-scope": "off",
+        "react-hooks/exhaustive-deps": "off",
+        "react/jsx-filename-extension": [1, { "extensions": [".js", ".tsx"] }],
+        "react/require-default-props": "off",
+        // Tailwind
         "tailwindcss/no-custom-classname": "off",
-        "react-hooks/exhaustive-deps": "off"
+        // Import
+        "import/extensions": "off",
+        "import/no-extraneous-dependencies": "off",
+        "import/prefer-default-export": "off"
     },
     "settings": {
         "react": {

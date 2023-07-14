@@ -4,7 +4,7 @@ import Tabs from "components/ui/Tabs";
 import Card from "components/ui/Card";
 import PokemonDetailsCard from "components/pokemon/PokemonDetailsCard";
 
-const Team = () => {
+function Team() {
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
 
   return (
@@ -24,6 +24,6 @@ const Team = () => {
       </Tabs>
     </Card>
   );
-};
+}
 
 export default Team;

@@ -4,7 +4,7 @@ type LayoutProps = {
   children?: React.ReactNode;
 };
 
-const Layout = ({ children }: LayoutProps) => {
+function Layout({ children }: LayoutProps) {
   return (
     <div className="h-screen">
       <Header />
@@ -12,6 +12,6 @@ const Layout = ({ children }: LayoutProps) => {
       {/* <Footer /> */}
     </div>
   );
-};
+}
 
 export default Layout;

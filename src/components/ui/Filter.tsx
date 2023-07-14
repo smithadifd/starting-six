@@ -1,11 +1,12 @@
 import { getClassNames } from "lib/utils";
+
 interface FilterProps {
   filter: string;
   className?: string[] | string;
   handler: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Filter = ({ filter, handler, className }: FilterProps) => {
+function Filter({ filter, handler, className }: FilterProps) {
   return (
     <input
       name="pokemonFilter"
@@ -19,6 +20,6 @@ const Filter = ({ filter, handler, className }: FilterProps) => {
       )}
     />
   );
-};
+}
 
 export default Filter;

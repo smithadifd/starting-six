@@ -10,7 +10,7 @@ interface TeamStatsProps {
   pokemon: PokemonType;
 }
 
-const TeamStats = ({ pokemon }: TeamStatsProps) => {
+function TeamStats({ pokemon }: TeamStatsProps) {
   const pokemonActions = useEffectiveness(pokemon);
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
   const [stats] = useState(() => {
@@ -63,6 +63,6 @@ const TeamStats = ({ pokemon }: TeamStatsProps) => {
       </div>
     </div>
   );
-};
+}
 
 export default TeamStats;

@@ -17,12 +17,12 @@ interface PokemonCardProps {
   onClick?: () => void;
 }
 
-const PokemonCard = ({
+function PokemonCard({
   pokemon,
   isSelected = false,
   filter,
   onClick,
-}: PokemonCardProps) => {
+}: PokemonCardProps) {
   return (
     <PkCard
       pokemon={pokemon}
@@ -31,12 +31,12 @@ const PokemonCard = ({
       onClick={onClick}
     />
   );
-};
+}
 
 /**
  * Consists of a grid of PokemonCard components, which renders a Pokemon's name, number, and sprite.
  */
-const PokemonGrid = () => {
+function PokemonGrid() {
   const { data } = useGetPokemonListQuery();
   const onPokemonClick = useContext(PokemonDetailsContext);
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
@@ -75,6 +75,6 @@ const PokemonGrid = () => {
       />
     </Card>
   );
-};
+}
 
 export default PokemonGrid;

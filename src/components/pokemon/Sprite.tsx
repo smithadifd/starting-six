@@ -9,13 +9,13 @@ interface SpriteProps {
   className?: string[];
 }
 
-const Sprite = ({
-  alt,
+function Sprite({
   number,
+  alt = "",
   rounded = false,
   color = null,
   className = [],
-}: SpriteProps) => {
+}: SpriteProps) {
   let url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${number}.png`;
   let height = "w-18";
 
@@ -30,6 +30,6 @@ const Sprite = ({
   if (color) classes += ` ${color}`;
 
   return <img src={url} alt={alt || String(number)} className={classes} />;
-};
+}
 
 export default Sprite;

@@ -5,10 +5,10 @@ interface SelectPokemonButtonProps {
   onClickHandler: ({ isAdding }: { isAdding: boolean }) => void;
 }
 
-const SelectPokemonButton = ({
+function SelectPokemonButton({
   name,
   onClickHandler,
-}: SelectPokemonButtonProps) => {
+}: SelectPokemonButtonProps) {
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
   const pokemonNames = Object.keys(chosenPokemon);
   const fullTeam = pokemonNames.length >= 6;
@@ -29,7 +29,8 @@ const SelectPokemonButton = ({
         {text}
       </button>
     );
-  } else if (canAdd) {
+  }
+  if (canAdd) {
     return (
       <button
         className={`${commonClasses} bg-sky-500 hover:bg-sky-600`}
@@ -40,18 +41,17 @@ const SelectPokemonButton = ({
         {text}
       </button>
     );
-  } else {
-    return (
-      <button
-        className={`${commonClasses} bg-red-500 hover:bg-red-600`}
-        type="button"
-        disabled={isDisabled}
-        onClick={() => onClickHandler({ isAdding: canAdd })}
-      >
-        {text}
-      </button>
-    );
   }
-};
+  return (
+    <button
+      className={`${commonClasses} bg-red-500 hover:bg-red-600`}
+      type="button"
+      disabled={isDisabled}
+      onClick={() => onClickHandler({ isAdding: canAdd })}
+    >
+      {text}
+    </button>
+  );
+}
 
 export default SelectPokemonButton;

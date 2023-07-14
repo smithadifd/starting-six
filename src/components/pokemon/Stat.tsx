@@ -4,7 +4,7 @@ interface StatProps {
   stat: StatType;
 }
 
-const Stat = ({ stat }: StatProps) => {
+function Stat({ stat }: StatProps) {
   const displayName = stat.stat.name.replace("-", " ");
   return (
     <div className="prose prose-neutral flex justify-between">
@@ -14,6 +14,6 @@ const Stat = ({ stat }: StatProps) => {
       <span>{stat.base_stat}</span>
     </div>
   );
-};
+}
 
 export default Stat;

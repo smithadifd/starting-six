@@ -6,7 +6,7 @@ interface ModalProps {
   onClose: () => void;
 }
 
-const Modal = ({ children, isOpen, onClose }: ModalProps) => {
+function Modal({ children, isOpen, onClose }: ModalProps) {
   return (
     <ReactPortal wrapperId="modal--wrapper">
       {isOpen && (
@@ -25,6 +25,6 @@ const Modal = ({ children, isOpen, onClose }: ModalProps) => {
       )}
     </ReactPortal>
   );
-};
+}
 
 export default Modal;

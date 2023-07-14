@@ -9,7 +9,7 @@ interface CardProps {
   opacity?: number;
 }
 
-const Card = ({ children, className, color = "white", opacity }: CardProps) => {
+function Card({ children, className, color = "white", opacity }: CardProps) {
   const classes = getClassNames(
     "shadow-md rounded-md",
     `bg-${color}`,
@@ -17,6 +17,6 @@ const Card = ({ children, className, color = "white", opacity }: CardProps) => {
     className
   );
   return <div className={classes}>{children}</div>;
-};
+}
 
 export default Card;

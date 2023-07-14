@@ -9,15 +9,14 @@ import Types from "components/pokemon/Types";
 interface PokemonHeaderProps {
   pokemon: Pokemon;
   isSelected?: boolean;
-  className?: string;
   filter?: string;
 }
 
-const PokemonHeader = ({
+function PokemonHeader({
   pokemon,
   isSelected = false,
   filter,
-}: PokemonHeaderProps) => {
+}: PokemonHeaderProps) {
   const bgColor = isSelected ? "bg-amber-300" : "bg-sky-500";
   const textColor = isSelected ? "text-neutral-900" : "text-neutral-50";
   const classNames = `flex justify-between items-center rounded-t p-4 ${bgColor}`;
@@ -61,6 +60,6 @@ const PokemonHeader = ({
       </div>
     </div>
   );
-};
+}
 
 export default PokemonHeader;

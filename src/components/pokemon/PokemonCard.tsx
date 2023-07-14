@@ -13,24 +13,23 @@ interface PokemonCardProps {
   onClick?: () => void;
 }
 
-const PokemonCard = ({
+function PokemonCard({
   pokemon,
   isSelected = false,
   className = "",
   filter,
   onClick,
-}: PokemonCardProps) => {
+}: PokemonCardProps) {
   const classes = getClassNames(
     "m-2 flex flex-col rounded border border-neutral-300 w-52 h-52 bg-neutral-50",
     className
   );
 
   return (
-    <button onClick={onClick}>
+    <button type="button" onClick={onClick}>
       <Card className={classes}>
         <PokemonHeader
           pokemon={pokemon}
-          className="flex grow"
           isSelected={isSelected}
           filter={filter}
         />
@@ -45,6 +44,6 @@ const PokemonCard = ({
       </Card>
     </button>
   );
-};
+}
 
 export default PokemonCard;

@@ -7,12 +7,12 @@ interface PillProps {
   className?: string;
 }
 
-const Pill = ({
+function Pill({
   children,
   textColor: txtClr,
   backgroundColor: bgClr,
   className,
-}: PillProps) => {
+}: PillProps) {
   const textColor = txtClr || "text-gray-800";
   const backgroundColor = bgClr || "bg-gray-100";
   const defaultClasses =
@@ -25,6 +25,6 @@ const Pill = ({
   );
 
   return <span className={classes}>{children}</span>;
-};
+}
 
 export default Pill;

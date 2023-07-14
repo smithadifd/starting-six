@@ -13,10 +13,10 @@ interface TeamEffectivnessProps {
   opponent?: PokemonType;
 }
 
-const TeamEffectiveness = ({
+function TeamEffectiveness({
   effectiveness = new Map(),
   opponent = {} as PokemonType,
-}: TeamEffectivnessProps) => {
+}: TeamEffectivnessProps) {
   const { data: opponentData } = useGetPokemonByNameQuery(opponent.name);
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
 
@@ -53,6 +53,6 @@ const TeamEffectiveness = ({
       })}
     </div>
   );
-};
+}
 
 export default TeamEffectiveness;

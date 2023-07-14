@@ -10,11 +10,11 @@ interface PokemonDetailsCardProps {
   showAdditionalDetails?: boolean;
 }
 
-const PokemonDetailsCard = ({
+function PokemonDetailsCard({
   pokemon,
   className,
   showAdditionalDetails = true,
-}: PokemonDetailsCardProps) => {
+}: PokemonDetailsCardProps) {
   const classes = getClassNames(className);
   return (
     <Card className={classes}>
@@ -24,6 +24,6 @@ const PokemonDetailsCard = ({
       />
     </Card>
   );
-};
+}
 
 export default PokemonDetailsCard;
