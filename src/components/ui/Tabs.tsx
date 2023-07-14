@@ -15,7 +15,9 @@ const Tabs = ({ children }: TabsProps) => {
       <button
         key={i}
         onClick={() => setActiveTab(i)}
-        className={`px-4 py-2 ${activeTab === i ? "text-white bg-sky-500" : ""}`}
+        className={`px-4 py-2 ${
+          activeTab === i ? "bg-sky-500 text-white" : ""
+        }`}
       >
         {child.props.title}
       </button>
@@ -29,7 +31,7 @@ const Tabs = ({ children }: TabsProps) => {
           {childrenArray.map((child, i) => createTab(child, i))}
         </div>
       </div>
-      <div className="flex flex-col">{activeChild}</div>
+      <div className="mt-4 flex flex-col">{activeChild}</div>
     </div>
   );
 };

@@ -7,15 +7,13 @@ import TypeEffectiveness from "components/pokemon/TypeEffectiveness";
 interface TypeEffectivenessContainerProps {
   pokemon: PokemonType;
   className?: string;
-  showNormal?: boolean;
 }
 
 const TypeEffectivenessContainer = ({
   pokemon,
   className,
-  showNormal = false,
 }: TypeEffectivenessContainerProps) => {
-  const classes = getClassNames("flex flex-col py-2", className);
+  const classes = getClassNames("flex flex-col py-2overflow-auto", className);
   const pokemonActions = useEffectiveness(pokemon);
   const normalTypes = Object.fromEntries(
     Object.entries(pokemonActions.defense).filter(([, value]) => value === 1)
@@ -34,9 +32,7 @@ const TypeEffectivenessContainer = ({
 
   return (
     <div className={classes}>
-      {showNormal && (
-        <TypeEffectiveness title="Normal" effectiveTypes={normalTypes} />
-      )}
+      <TypeEffectiveness title="Normal" effectiveTypes={normalTypes} />
       <TypeEffectiveness title="Weak" effectiveTypes={weakTypes} />
       <TypeEffectiveness title="Resistant" effectiveTypes={resistantTypes} />
       <TypeEffectiveness title="Immune" effectiveTypes={immuneTypes} />

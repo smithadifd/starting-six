@@ -46,14 +46,20 @@ const TeamStats = ({ pokemon }: TeamStatsProps) => {
   });
 
   return (
-    <div className="h-80 overflow-auto">
+    <div>
       <div className="flex flex-col">
         <h2 className="text-2xl font-bold">Effective Against</h2>
-        <TeamEffectiveness effectiveness={stats.attackWith} />
+        <TeamEffectiveness
+          effectiveness={stats.attackWith}
+          opponent={pokemon}
+        />
       </div>
       <div className="flex flex-col">
         <h2 className="text-2xl font-bold">Resistant/Immune To</h2>
-        <TeamEffectiveness effectiveness={stats.avoidUsing} />
+        <TeamEffectiveness
+          effectiveness={stats.avoidUsing}
+          opponent={pokemon}
+        />
       </div>
     </div>
   );

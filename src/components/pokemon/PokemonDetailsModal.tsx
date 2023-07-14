@@ -14,9 +14,6 @@ interface PokemonDetailsModalProps {
   onClose: () => void;
 }
 
-/**
- * TODO: Convert original component over to be TypeScript and prop driven.
- */
 const PokemonDetailsModal = ({
   name,
   isOpen,
@@ -43,7 +40,11 @@ const PokemonDetailsModal = ({
       <Modal isOpen={isOpen} onClose={onClose}>
         <PokemonDetails pokemon={pokemon}>
           <div className="flex justify-end p-4 align-middle">
-            <button className="btn mr-4" type="button" onClick={onClose}>
+            <button
+              className="btn mr-2 rounded px-4 py-2 font-medium hover:bg-neutral-200"
+              type="button"
+              onClick={onClose}
+            >
               Close
             </button>
             <SelectPokemonButton name={name} onClickHandler={onClickHandler} />

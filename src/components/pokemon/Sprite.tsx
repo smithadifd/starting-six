@@ -17,7 +17,10 @@ const Sprite = ({
   className = [],
 }: SpriteProps) => {
   let url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${number}.png`;
-  let classes = getClassNames(className);
+  let height = "w-18";
+
+  if (!number) height = "w-9";
+  let classes = getClassNames(height, className);
 
   if (!number) {
     url = pokeball;
@@ -25,7 +28,6 @@ const Sprite = ({
 
   if (rounded) classes += " rounded-full";
   if (color) classes += ` ${color}`;
-  if (!number) classes += "align-center w-1/2";
 
   return <img src={url} alt={alt || String(number)} className={classes} />;
 };

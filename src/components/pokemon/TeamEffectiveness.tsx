@@ -1,27 +1,23 @@
 import { useAppSelector } from "hooks/app";
-import { useParams } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 import { useGetPokemonByNameQuery } from "services/api";
+import { Pokemon as PokemonType } from "lib/types";
 
 import Sprite from "components/pokemon/Sprite";
 import Type from "components/pokemon/Type";
 
 interface TeamEffectivnessProps {
   effectiveness?: Map<string, Map<string, number>>;
+  opponent?: PokemonType;
 }
-
-type Params = {
-  pokemonName: string;
-};
 
 const TeamEffectiveness = ({
   effectiveness = new Map(),
+  opponent = {} as PokemonType,
 }: TeamEffectivnessProps) => {
-  const params = useParams<Params>();
-  const { pokemonName = "" } = params;
-  const { data: opponent } = useGetPokemonByNameQuery(pokemonName);
+  const { data: opponentData } = useGetPokemonByNameQuery(opponent.name);
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
 
   if (!effectiveness.size || Object.keys(chosenPokemon).length === 0) {
@@ -49,7 +45,9 @@ const TeamEffectiveness = ({
               ))}
             </div>
             <FontAwesomeIcon icon={faArrowRight} />
-            {opponent && <Sprite number={opponent.id} alt={opponent.name} />}
+            {opponentData && (
+              <Sprite number={opponentData.id} alt={opponentData.name} />
+            )}
           </div>
         );
       })}

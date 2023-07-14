@@ -18,10 +18,17 @@ const PokemonHeader = ({
   isSelected = false,
   filter,
 }: PokemonHeaderProps) => {
+  const bgColor = isSelected ? "bg-amber-300" : "bg-sky-500";
+  const textColor = isSelected ? "text-neutral-900" : "text-neutral-50";
+  const classNames = `flex justify-between items-center rounded-t p-4 ${bgColor}`;
+
   const number = pokemon.id || getNumberFromUrl(pokemon.url);
   const withPadding = (n: number) => n.toString().padStart(3, "0");
+
   const text = `#${number && withPadding(number)} ${pokemon.name}`;
-  let title = <h3 className="prose prose-lg capitalize">{text}</h3>;
+  let title = (
+    <h3 className={`prose prose-lg capitalize ${textColor}`}>{text}</h3>
+  );
 
   // If a filter is present, highlight the text around the match.
   if (filter) {
@@ -32,6 +39,7 @@ const PokemonHeader = ({
       const before = text.slice(0, index);
       const match = text.slice(index, index + length);
       const after = text.slice(index + length);
+      // FIX: Highlighting is acting a bit wonky.
       title = (
         <>
           {before}
@@ -42,13 +50,9 @@ const PokemonHeader = ({
     }
   }
 
-  const bgColor = isSelected ? "bg-amber-300" : "bg-sky-500";
-  const textColor = isSelected ? "text-neutral-900" : "text-neutral-50";
-  const classNames = `flex justify-between items-center rounded-t p-4 ${bgColor} ${textColor}`;
-
   return (
     <div className={classNames}>
-      <div className="flex justify-between items-center w-full">
+      <div className="flex w-full items-center justify-between">
         {title}
         {pokemon.types && <Types types={pokemon.types} />}
         {isSelected && (

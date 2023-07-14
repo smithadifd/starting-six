@@ -32,7 +32,7 @@ const Moves = ({ moves }: MovesProps) => {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
-      <ul className="h-36 overflow-y-auto bg-white p-2">
+      <ul className="bg-white p-2">
         {filteredMoves.map((move) => (
           <li key={move.move.name}>
             <Move move={move} />

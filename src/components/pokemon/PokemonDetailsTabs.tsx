@@ -8,13 +8,9 @@ import TeamStats from "components/pokemon/TeamStats";
 
 interface PokemonDetailsTabsProps {
   pokemon: PokemonType;
-  showNormal?: boolean;
 }
 
-const PokemonDetailsTabs = ({
-  pokemon,
-  showNormal,
-}: PokemonDetailsTabsProps) => {
+const PokemonDetailsTabs = ({ pokemon }: PokemonDetailsTabsProps) => {
   // const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
   // const hasPokemon = Object.keys(chosenPokemon).length > 0;
   const tabHeaders = ["Effectiveness", "Moves", "Team Stats"];
@@ -25,10 +21,7 @@ const PokemonDetailsTabs = ({
         if (header === "Effectiveness") {
           return (
             <div key={header} title={header}>
-              <TypeEffectivenessContainer
-                pokemon={pokemon}
-                showNormal={showNormal}
-              />
+              <TypeEffectivenessContainer pokemon={pokemon} />
             </div>
           );
         } else if (header === "Moves") {

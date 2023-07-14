@@ -8,7 +8,6 @@ interface ModalProps {
 
 const Modal = ({ children, isOpen, onClose }: ModalProps) => {
   return (
-    // TODO: ID is not unique
     <ReactPortal wrapperId="modal--wrapper">
       {isOpen && (
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -17,8 +16,10 @@ const Modal = ({ children, isOpen, onClose }: ModalProps) => {
               className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
               aria-hidden="true"
               onClick={onClose}
-            ></div>
-            <div className="relative z-10 rounded-lg bg-white">{children}</div>
+            />
+            <div className="relative z-10 rounded-lg bg-white sm:w-screen md:w-[75vw] lg:w-[50vw]">
+              {children}
+            </div>
           </div>
         </div>
       )}

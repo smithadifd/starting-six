@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAppSelector } from "hooks/app";
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { faPeopleGroup } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPeopleGroup } from "@fortawesome/free-solid-svg-icons";
 
 import TeamOverview from "components/team/TeamOverview";
 
@@ -37,7 +37,7 @@ const Header = () => {
         onClick={viewTeamHandler}
       >
         <span className="mr-2 text-white max-lg:hidden">View Team</span>
-        {/* <FontAwesomeIcon icon={faPeopleGroup} className="text-white" /> */}
+        <FontAwesomeIcon icon={faPeopleGroup} className="text-white" />
       </button>
       <div className="hidden w-full justify-center max-[750px]:flex">
         <TeamOverview pokemonNames={pokemonNames} />

@@ -10,36 +10,48 @@ const SelectPokemonButton = ({
   onClickHandler,
 }: SelectPokemonButtonProps) => {
   const chosenPokemon = useAppSelector((state) => state.pokemon.chosenPokemon);
-
   const pokemonNames = Object.keys(chosenPokemon);
-  const fullTeam = pokemonNames.length === 6;
-
-  console.log(
-    "chosenPokemon",
-    chosenPokemon,
-    "pokemonNames",
-    pokemonNames,
-    "fullTeam",
-    fullTeam
-  );
+  const fullTeam = pokemonNames.length >= 6;
 
   const canAdd = !chosenPokemon[name];
   const text = canAdd ? "Add" : "Remove";
   const isDisabled = canAdd && fullTeam;
-  let color = canAdd ? "blue" : "red";
-  if (isDisabled) color = "gray"; // TODO: Not pulling from config
-  const classes = `btn btn-${color}`;
+  const commonClasses = "p-2 px-4 ml-2 rounded text-white font-medium";
 
-  return (
-    // disabled={isDisabled}
-    <button
-      className={classes}
-      type="button"
-      onClick={() => onClickHandler({ isAdding: canAdd })}
-    >
-      {text}
-    </button>
-  );
+  // NOTE: Originally was built dynamically, but Tailwind hover classes wouldn't apply.
+  if (isDisabled) {
+    return (
+      <button
+        className={`${commonClasses} bg-gray-500 hover:bg-gray-500`}
+        type="button"
+        disabled={isDisabled}
+      >
+        {text}
+      </button>
+    );
+  } else if (canAdd) {
+    return (
+      <button
+        className={`${commonClasses} bg-sky-500 hover:bg-sky-600`}
+        type="button"
+        disabled={isDisabled}
+        onClick={() => onClickHandler({ isAdding: canAdd })}
+      >
+        {text}
+      </button>
+    );
+  } else {
+    return (
+      <button
+        className={`${commonClasses} bg-red-500 hover:bg-red-600`}
+        type="button"
+        disabled={isDisabled}
+        onClick={() => onClickHandler({ isAdding: canAdd })}
+      >
+        {text}
+      </button>
+    );
+  }
 };
 
 export default SelectPokemonButton;

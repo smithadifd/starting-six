@@ -2,13 +2,11 @@ import PokemonHeader from "components/pokemon/PokemonHeader";
 import Sprite from "components/pokemon/Sprite";
 import Stats from "components/pokemon/Stats";
 import Abilities from "components/pokemon/Abilities";
-import TypeEffectivenessContainer from "components/pokemon/TypeEffectivenessContainer.js";
 import PokemonDetailsTabs from "components/pokemon/PokemonDetailsTabs";
 
 interface PokemonDetailsProps {
   pokemon: any;
   showAdditionalDetails?: boolean;
-  showNormal?: boolean;
   children?: React.ReactNode;
 }
 
@@ -18,7 +16,6 @@ interface PokemonDetailsProps {
 const PokemonDetails = ({
   pokemon,
   showAdditionalDetails = true,
-  showNormal = false,
   children,
 }: PokemonDetailsProps) => {
   return (
@@ -32,14 +29,10 @@ const PokemonDetails = ({
           </div>
           <Stats stats={pokemon.stats} />
         </div>
-        {showAdditionalDetails ? (
-          <PokemonDetailsTabs pokemon={pokemon} showNormal={showNormal} />
-        ) : (
-          <TypeEffectivenessContainer
-            pokemon={pokemon}
-            className="mb-2 max-h-80 overflow-auto"
-            showNormal={showNormal}
-          />
+        {showAdditionalDetails && (
+          <div className="h-96 overflow-auto pt-4">
+            <PokemonDetailsTabs pokemon={pokemon} />
+          </div>
         )}
       </div>
       {children}
