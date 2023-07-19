@@ -10,7 +10,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { createRoot } from "react-dom/client";
 
 import PokemonGrid from "components/pokemon/PokemonGrid";
-import Team from "components/pokemon/Team";
+import Team from "components/team/Team";
 
 const container = document.getElementById("root");
 
