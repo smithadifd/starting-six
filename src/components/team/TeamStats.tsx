@@ -4,7 +4,7 @@ import { useAppSelector } from "hooks/app";
 import { useEffectiveness } from "hooks/pokemon";
 import { Pokemon as PokemonType } from "lib/types";
 
-import TeamEffectiveness from "components/team/TeamEffectiveness";
+// import TeamEffectiveness from "components/team/TeamEffectiveness";
 
 interface TeamStatsProps {
   pokemon: PokemonType;
@@ -45,9 +45,12 @@ function TeamStats({ pokemon }: TeamStatsProps) {
     return { attackWith, avoidUsing };
   });
 
+  console.log("stats", stats);
+
   return (
-    <div>
-      <div className="flex flex-col">
+    <div className="flex justify-center">
+      <span>TBD</span>
+      {/* <div className="flex flex-col">
         <h2 className="text-2xl font-bold">Effective Against</h2>
         <TeamEffectiveness
           effectiveness={stats.attackWith}
@@ -60,7 +63,7 @@ function TeamStats({ pokemon }: TeamStatsProps) {
           effectiveness={stats.avoidUsing}
           opponent={pokemon}
         />
-      </div>
+      </div> */}
     </div>
   );
 }

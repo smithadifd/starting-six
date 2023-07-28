@@ -4,7 +4,7 @@ import { useAppSelector } from "hooks/app";
 import { useEffectiveness } from "hooks/pokemon";
 import { Pokemon as PokemonType } from "lib/types";
 
-import TeamEffectiveness from "components/pokemon/TeamEffectiveness";
+import TeamEffectiveness from "components/team/TeamEffectiveness";
 
 interface TeamStatsProps {
   pokemon: PokemonType;

@@ -24,6 +24,7 @@ function TeamEffectiveness({
   return (
     <div className="flex flex-col">
       {Array.from(effectiveness.entries()).map(([name, typeCollection]) => {
+        console.log("name", name, "typeCollection", typeCollection);
         return (
           <MemberEffectiveness
             key={name}
