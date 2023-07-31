@@ -21,7 +21,7 @@ function Header() {
     <header className="flex place-items-center justify-between bg-red-700 px-4 shadow-lg max-[750px]:flex-wrap">
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions  */}
       <h1
-        className="title cursor-pointer text-white max-lg:text-xl"
+        className="prose-neutral-50 prose prose-2xl cursor-pointer text-white"
         onClick={onClickHandler}
       >
         Starting Six

@@ -8,3 +8,7 @@ $workspaceHeight: calc(100vh - $headerHeight);
 main {
   height: $workspaceHeight;
 }
+
+h1, h2, h3, h4, h5, h6, p, span, div {
+  font-family: 'Roboto', sans-serif;
+}
