@@ -1,7 +1,5 @@
 # Pokemon - Starting Six
 
-- [ ] Write app introduction.
-
 ## What's inside?
 
 -   [ReactJS](https://reactjs.org)
