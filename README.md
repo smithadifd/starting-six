@@ -1,5 +1,9 @@
 # Pokemon - Starting Six
 
+This is a short practice project and playground for experimenting with React, TypeScript, Vite, and Tailwind via the use of an old passion project and video game. The ability to construct a balanced team in Pokemon and understand it's strengths and weaknesses while being able to quickly respond is paramount to any battle, and this little web application seeks to do just that.
+
+Parts are still a work in progress due to having to switch gears in life, although much of the core functionality, components, and concepts are in place.
+
 ## What's inside?
 
 -   [ReactJS](https://reactjs.org)
