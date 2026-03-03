@@ -46,5 +46,5 @@ npm-debug.log*
 # Coverage
 coverage/
 
-# Drizzle migrations (generated)
-drizzle/
+# Drizzle migration snapshots (SQL files and journal tracked in git)
+drizzle/meta/*_snapshot.json

@@ -4,7 +4,7 @@
 
 Self-hosted web application for building and analyzing Pokémon teams across game playthroughs. Pick up to 6 Pokémon per named run, assign moves + ability + Tera type to each, and get full team analysis: type coverage, move coverage, role balance, and ability highlights. Deployed on Synology NAS via Docker.
 
-**Status**: Phase 1 complete. Phase 2 (Team Builder) next.
+**Status**: Phase 2 complete. Phase 3 (Analysis Engine) next.
 
 ---
 
@@ -60,10 +60,13 @@ starting-six/
     │       ├── setup/           # Account creation endpoint
     │       ├── health/          # Docker healthcheck
     │       ├── sync/            # PokéAPI sync (SSE)
-    │       └── pokemon/         # Pokémon API
+    │       ├── pokemon/         # Pokémon API + per-pokemon moves
+    │       ├── playthroughs/    # Playthroughs CRUD + team member management
+    │       └── settings/        # App settings get/update
     ├── components/
     │   ├── layout/              # LayoutShell, Sidebar, Header, UserMenu
     │   ├── pokemon/             # PokemonGrid (react-virtuoso), PokemonCard, TypeBadge
+    │   ├── team/                # TeamGrid, TeamMemberCard, selectors (move, ability, Tera)
     │   └── sync/                # SyncStatus progress bar
     ├── lib/
     │   ├── auth.ts              # Better Auth lazy proxy singleton
@@ -195,7 +198,7 @@ docker compose -f docker-compose.prod.yml --env-file .env.production up -d
 
 ## Code Conventions
 
-- Same as Hoard: strict TypeScript, no `any`, functional components
+- Strict TypeScript, no `any`, functional components
 - Server Components by default, `'use client'` only when needed
 - `@/` path alias to `src/`
 - Conventional commits: `feat:`, `fix:`, `refactor:`, `chore:`
@@ -215,8 +218,14 @@ docker compose -f docker-compose.prod.yml --env-file .env.production up -d
 - [x] `/pokemon` — paginated browser with search, type/gen filters
 - [x] `/pokemon/[slug]` — detail page (stats, abilities, learnset)
 
-### Phase 2: Team Builder
-Playthroughs CRUD, 6-slot team grid, Pokémon search modal, move selector, ability selector, Tera type dropdown.
+### Phase 2: Team Builder ← COMPLETE
+
+- [x] Playthroughs CRUD (create, view, edit, delete)
+- [x] 6-slot team grid with empty slot placeholders
+- [x] Pokémon search modal with type/generation filters
+- [x] Move selector (4 moves per team member)
+- [x] Ability selector (from Pokémon's available abilities)
+- [x] Tera type dropdown
 
 ### Phase 3: Analysis Engine
 Type chart, defense/offense/roles/abilities analysis, analysis API, Analysis tab on playthrough page.
@@ -241,15 +250,16 @@ Security, testing, performance, UX polish, competitive features.
 
 ## Claude Code Agents
 
-Reusing Hoard agent types from `.claude/` (global). Relevant agents for this project:
+Custom agents in `.claude/agents/` for common development workflows:
 
-| Agent | Purpose |
-|-------|---------|
-| `phase-implementer` | Implement features per roadmap |
-| `ui-builder` | React components, design system |
-| `db-assistant` | Schema changes, queries |
-| `pre-commit-check` | Type check, lint, build |
-| `code-reviewer` | Quality review |
+| Agent | Command | Purpose |
+| ------- | ------- | ------- |
+| `phase-implementer` | `/agent phase-implementer` | Implements features phase-by-phase per the roadmap |
+| `ui-builder` | `/agent ui-builder` | React components following the Pokémon design system |
+| `db-assistant` | `/agent db-assistant` | Schema changes, queries, migrations |
+| `pre-commit-check` | `/agent pre-commit-check` | Type checking, linting, build verification |
+| `code-reviewer` | `/agent code-reviewer` | Code quality review before merging |
+| `plan-generator` | `/agent plan-generator` | Audits codebase and generates structured plans |
 
 ---
 

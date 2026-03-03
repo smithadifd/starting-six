@@ -4,7 +4,7 @@ set -euo pipefail
 REMOTE="synology"
 REMOTE_PATH="/volume3/docker/starting-six"
 REMOTE_DOCKER_PATH="export PATH=/usr/local/bin:/usr/syno/bin:\$PATH"
-REPO_URL="git@github.com:smithadifd/starting-six.git"
+REPO_URL="https://github.com/smithadifd/starting-six.git"
 COMPOSE_FILE="docker-compose.prod.yml"
 APP_PORT=3002
 

@@ -19,6 +19,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_APP_URL=https://starting-six.home
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 RUN npm run build
+# Ensure directories exist for runner COPY (may not exist in fresh repos)
+RUN mkdir -p /app/public /app/drizzle/meta
 
 # --- Runner ---
 FROM node:22-alpine AS runner
