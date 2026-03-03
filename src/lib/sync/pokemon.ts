@@ -12,7 +12,7 @@ const FORM_REGIONAL: Record<string, string> = {
   'paldea': 'Paldean',
 };
 
-function getFormName(pokemonSlug: string, speciesName: string): string | null {
+export function getFormName(pokemonSlug: string, speciesName: string): string | null {
   if (pokemonSlug === speciesName) return null;
   const suffix = pokemonSlug.slice(speciesName.length + 1);
   if (!suffix) return null;
@@ -24,7 +24,7 @@ function getFormName(pokemonSlug: string, speciesName: string): string | null {
     .join(' ');
 }
 
-function buildDisplayName(speciesEnglishName: string, formName: string | null): string {
+export function buildDisplayName(speciesEnglishName: string, formName: string | null): string {
   if (!formName) return speciesEnglishName;
   return `${speciesEnglishName} (${formName})`;
 }
