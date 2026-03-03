@@ -4,7 +4,7 @@
 
 Self-hosted web application for building and analyzing Pokémon teams across game playthroughs. Pick up to 6 Pokémon per named run, assign moves + ability + Tera type to each, and get full team analysis: type coverage, move coverage, role balance, and ability highlights. Deployed on Synology NAS via Docker.
 
-**Status**: Phase 2 complete. Phase 3 (Analysis Engine) next.
+**Status**: Phase 3 complete. Phase 4 (PWA + Mobile) next.
 
 ---
 
@@ -227,8 +227,15 @@ docker compose -f docker-compose.prod.yml --env-file .env.production up -d
 - [x] Ability selector (from Pokémon's available abilities)
 - [x] Tera type dropdown
 
-### Phase 3: Analysis Engine
-Type chart, defense/offense/roles/abilities analysis, analysis API, Analysis tab on playthrough page.
+### Phase 3: Analysis Engine ← COMPLETE
+
+- [x] Gen 9 18×18 type effectiveness chart (`src/lib/analysis/typeChart.ts`)
+- [x] Defensive analysis: weakness/resistance counts, shared weaknesses, uncovered types
+- [x] Offensive analysis: move coverage %, uncovered types
+- [x] Role classification from base stats (sweeper, wall, tank, etc.)
+- [x] Notable ability highlights
+- [x] Analysis API route: `GET /api/playthroughs/[id]/analysis`
+- [x] TeamAnalysis component: collapsible panel on playthrough detail page
 
 ### Phase 4: PWA + Mobile Polish
 Serwist service worker, PWA manifest, mobile layout final pass.
