@@ -4,7 +4,7 @@
 
 Self-hosted web application for building and analyzing Pokémon teams across game playthroughs. Pick up to 6 Pokémon per named run, assign moves + ability + Tera type to each, and get full team analysis: type coverage, move coverage, role balance, and ability highlights. Deployed on Synology NAS via Docker.
 
-**Status**: Phase 1 scaffold in progress.
+**Status**: Phase 1 complete. Phase 2 (Team Builder) next.
 
 ---
 
@@ -205,15 +205,15 @@ docker compose -f docker-compose.prod.yml --env-file .env.production up -d
 
 ## Phased Roadmap
 
-### Phase 1: Full Scaffold + Data Layer + Pokémon Browser ← IN PROGRESS
+### Phase 1: Full Scaffold + Data Layer + Pokémon Browser ← COMPLETE
 - [x] Project scaffolding, Docker, database schema
 - [x] Better Auth (credentials)
 - [x] Layout shell: sidebar + header + mobile tabs
 - [x] Login/setup pages
-- [ ] PokéAPI client + 6-stage sync pipeline with SSE
-- [ ] `/settings/system` — sync trigger + status
-- [ ] `/pokemon` — virtualized browser (react-virtuoso)
-- [ ] `/pokemon/[slug]` — detail page
+- [x] PokéAPI client + 6-stage sync pipeline with SSE
+- [x] `/settings` — general (preferred game) + system (sync trigger + history)
+- [x] `/pokemon` — paginated browser with search, type/gen filters
+- [x] `/pokemon/[slug]` — detail page (stats, abilities, learnset)
 
 ### Phase 2: Team Builder
 Playthroughs CRUD, 6-slot team grid, Pokémon search modal, move selector, ability selector, Tera type dropdown.
