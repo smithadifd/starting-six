@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, Trophy } from 'lucide-react';
 import { requireUserId } from '@/lib/auth-helpers';
 import { getPlaythrough, getTeamMembers } from '@/lib/db/queries';
 import { TeamGrid } from '@/components/team/TeamGrid';
+import { TeamAnalysis } from '@/components/team/TeamAnalysis';
 import { PlaythroughActions } from './PlaythroughActions';
 
 export const dynamic = 'force-dynamic';
@@ -85,6 +86,11 @@ export default async function PlaythroughPage({
           versionGroupId={run.versionGroupId}
           initialTeam={team}
         />
+      </div>
+
+      {/* Analysis Section */}
+      <div className="mb-6">
+        <TeamAnalysis playthroughId={playthroughId} teamSize={team.length} />
       </div>
     </div>
   );
