@@ -18,7 +18,7 @@ const TEAM_NOTABLE_SLUGS = new Set([
   'levitate', 'magic-bounce', 'prankster', 'regenerator', 'multiscale',
   'sturdy', 'magic-guard', 'unaware', 'mold-breaker', 'adaptability',
   'protean', 'libero', 'huge-power', 'pure-power', 'speed-boost',
-  'guts', 'technician', 'contrary', 'serene-grace', 'drought',
+  'guts', 'technician', 'contrary', 'serene-grace',
   'electric-surge', 'grassy-surge', 'misty-surge', 'psychic-surge',
 ]);
 
