@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { LayoutShell } from '@/components/layout/LayoutShell';
+import { PwaProvider } from '@/components/layout/PwaProvider';
 import { getSession } from '@/lib/auth-helpers';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
   appleWebApp: {
     capable: true,
@@ -47,9 +49,11 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
-        <LayoutShell user={user}>
-          {children}
-        </LayoutShell>
+        <PwaProvider>
+          <LayoutShell user={user}>
+            {children}
+          </LayoutShell>
+        </PwaProvider>
       </body>
     </html>
   );
