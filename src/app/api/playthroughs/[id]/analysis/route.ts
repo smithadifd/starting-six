@@ -1,8 +1,8 @@
 import { requireUserIdFromRequest } from '@/lib/auth-helpers';
-import { getPlaythrough, getTeamMembers, getPokemonById } from '@/lib/db/queries';
+import { getPlaythrough, getTeamMembers } from '@/lib/db/queries';
 import { getDb } from '@/lib/db';
-import { abilities } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { pokemon, abilities } from '@/lib/db/schema';
+import { inArray } from 'drizzle-orm';
 import { analyzeDefense } from '@/lib/analysis/defense';
 import { analyzeOffense } from '@/lib/analysis/offense';
 import { analyzeRoles } from '@/lib/analysis/roles';
@@ -34,6 +34,23 @@ export async function GET(
 
   const db = getDb();
 
+  // Batch fetch full pokemon data (for stats) and abilities (for isNotable)
+  const pokemonIds = [...new Set(team.map((m) => m.pokemon.id))];
+  const abilityIds = [...new Set(
+    team.filter((m) => m.ability).map((m) => m.ability!.id),
+  )];
+
+  const pokeMap = new Map(
+    db.select().from(pokemon).where(inArray(pokemon.id, pokemonIds)).all()
+      .map((p) => [p.id, p]),
+  );
+  const abilMap = new Map(
+    abilityIds.length > 0
+      ? db.select().from(abilities).where(inArray(abilities.id, abilityIds)).all()
+        .map((a) => [a.id, a])
+      : [],
+  );
+
   // Build defense input
   const defenseInput = team.map((m) => ({
     typeOne: m.pokemon.typeOne,
@@ -52,7 +69,7 @@ export async function GET(
 
   // Build roles input — need full stats from pokemon table
   const rolesInput = team.map((m) => {
-    const poke = getPokemonById(m.pokemon.id);
+    const poke = pokeMap.get(m.pokemon.id);
     return {
       name: m.pokemon.name,
       statHp: poke?.statHp ?? 0,
@@ -69,7 +86,7 @@ export async function GET(
   const abilitiesInput = team
     .filter((m) => m.ability)
     .map((m) => {
-      const abil = db.select().from(abilities).where(eq(abilities.id, m.ability!.id)).get();
+      const abil = abilMap.get(m.ability!.id);
       return {
         pokemonName: m.pokemon.name,
         name: m.ability!.name,

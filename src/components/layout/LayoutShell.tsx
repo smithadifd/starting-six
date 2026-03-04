@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { Toaster } from 'sonner';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 
@@ -28,6 +29,7 @@ export function LayoutShell({ children, user }: LayoutShellProps) {
           {children}
         </main>
       </div>
+      <Toaster position="bottom-right" theme="dark" />
     </div>
   );
 }

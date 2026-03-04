@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { requireUserId } from '@/lib/auth-helpers';
 import { getPokemonBySlug, getPokemonAbilities, getPokemonMoves } from '@/lib/db/queries';
 import { TypeBadge } from '@/components/pokemon/TypeBadge';
+import { MoveFilter } from '@/components/pokemon/MoveFilter';
 import { TYPE_COLORS } from '../../../../tailwind.config';
 
 export const dynamic = 'force-dynamic';
@@ -26,23 +27,6 @@ function statBarColor(value: number): string {
   if (value < 100) return '#eab308';
   if (value < 130) return '#22c55e';
   return '#3b82f6';
-}
-
-interface DamageClassBadgeProps {
-  damageClass: string;
-}
-
-function DamageClassBadge({ damageClass }: DamageClassBadgeProps) {
-  const colors: Record<string, string> = {
-    physical: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-    special: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    status: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-  };
-  return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${colors[damageClass] ?? colors.status}`}>
-      {damageClass}
-    </span>
-  );
 }
 
 export default async function PokemonDetailPage({
@@ -213,54 +197,7 @@ export default async function PokemonDetailPage({
       </div>
 
       {/* Learnset */}
-      <div className="rounded-lg border border-border bg-card p-6 mt-6">
-        <h2 className="font-semibold mb-4">
-          Learnset <span className="text-sm font-normal text-muted-foreground">({pokeMoves.length} moves)</span>
-        </h2>
-        {pokeMoves.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No move data synced yet.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left">
-                  <th className="pb-2 pr-4 text-xs text-muted-foreground font-medium">Move</th>
-                  <th className="pb-2 pr-4 text-xs text-muted-foreground font-medium">Type</th>
-                  <th className="pb-2 pr-4 text-xs text-muted-foreground font-medium">Cat.</th>
-                  <th className="pb-2 pr-4 text-xs text-muted-foreground font-medium text-right">Pow</th>
-                  <th className="pb-2 pr-4 text-xs text-muted-foreground font-medium text-right">Acc</th>
-                  <th className="pb-2 text-xs text-muted-foreground font-medium text-right">PP</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pokeMoves.map((pm) => (
-                  <tr key={pm.move.id} className="border-b border-border/50 last:border-0">
-                    <td className="py-1.5 pr-4 font-medium">{pm.move.name}</td>
-                    <td className="py-1.5 pr-4">
-                      <span
-                        className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase text-white"
-                        style={{ backgroundColor: TYPE_COLORS[pm.move.type] ?? '#888' }}
-                      >
-                        {pm.move.type}
-                      </span>
-                    </td>
-                    <td className="py-1.5 pr-4">
-                      <DamageClassBadge damageClass={pm.move.damageClass} />
-                    </td>
-                    <td className="py-1.5 pr-4 text-right font-mono">
-                      {pm.move.power ?? '—'}
-                    </td>
-                    <td className="py-1.5 pr-4 text-right font-mono">
-                      {pm.move.accuracy ? `${pm.move.accuracy}%` : '—'}
-                    </td>
-                    <td className="py-1.5 text-right font-mono">{pm.move.pp}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <MoveFilter moves={pokeMoves} typeColors={TYPE_COLORS} />
     </div>
   );
 }

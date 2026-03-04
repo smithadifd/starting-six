@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Pencil, Trash2, CheckCircle2, RotateCcw, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface PlaythroughActionsProps {
   playthroughId: number;
@@ -21,14 +22,16 @@ export function PlaythroughActions({ playthroughId, isCompleted, currentName, cu
   const toggleComplete = useCallback(async () => {
     setSaving(true);
     try {
-      await fetch(`/api/playthroughs/${playthroughId}`, {
+      const res = await fetch(`/api/playthroughs/${playthroughId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isCompleted: !isCompleted }),
       });
+      if (!res.ok) throw new Error('Failed to update');
+      toast.success(isCompleted ? 'Marked as in progress' : 'Marked as completed');
       router.refresh();
     } catch {
-      alert('Failed to update');
+      toast.error('Failed to update');
     } finally {
       setSaving(false);
     }
@@ -38,10 +41,11 @@ export function PlaythroughActions({ playthroughId, isCompleted, currentName, cu
     if (!confirm('Delete this playthrough and its entire team?')) return;
     setSaving(true);
     try {
-      await fetch(`/api/playthroughs/${playthroughId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/playthroughs/${playthroughId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
       router.push('/');
     } catch {
-      alert('Failed to delete');
+      toast.error('Failed to delete');
       setSaving(false);
     }
   }, [playthroughId, router]);
@@ -58,7 +62,7 @@ export function PlaythroughActions({ playthroughId, isCompleted, currentName, cu
 
     setSaving(true);
     try {
-      await fetch(`/api/playthroughs/${playthroughId}`, {
+      const res = await fetch(`/api/playthroughs/${playthroughId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -66,10 +70,12 @@ export function PlaythroughActions({ playthroughId, isCompleted, currentName, cu
           notes: notes.trim() || null,
         }),
       });
+      if (!res.ok) throw new Error('Failed to update');
       setEditOpen(false);
+      toast.success('Playthrough updated');
       router.refresh();
     } catch {
-      alert('Failed to update');
+      toast.error('Failed to update');
     } finally {
       setSaving(false);
     }

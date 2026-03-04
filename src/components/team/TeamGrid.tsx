@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { Plus, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { TeamMemberCard } from './TeamMemberCard';
 import { PokemonSearchModal } from './PokemonSearchModal';
 
@@ -71,12 +72,13 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
       });
       if (!res.ok) {
         const json = await res.json();
-        alert(json.error || 'Failed to add Pokémon');
+        toast.error(json.error || 'Failed to add Pokémon');
         return;
       }
       await refreshTeam();
+      toast.success('Added to team');
     } catch {
-      alert('Failed to add Pokémon');
+      toast.error('Failed to add Pokémon');
     } finally {
       setLoading(false);
     }
@@ -89,7 +91,7 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
       });
       await refreshTeam();
     } catch {
-      alert('Failed to remove Pokémon');
+      toast.error('Failed to remove Pokémon');
     }
   }, [playthroughId, refreshTeam]);
 

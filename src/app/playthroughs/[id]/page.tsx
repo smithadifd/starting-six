@@ -5,6 +5,7 @@ import { requireUserId } from '@/lib/auth-helpers';
 import { getPlaythrough, getTeamMembers } from '@/lib/db/queries';
 import { TeamGrid } from '@/components/team/TeamGrid';
 import { TeamAnalysis } from '@/components/team/TeamAnalysis';
+import { TeamExport } from '@/components/team/TeamExport';
 import { PlaythroughActions } from './PlaythroughActions';
 
 export const dynamic = 'force-dynamic';
@@ -79,6 +80,7 @@ export default async function PlaythroughPage({
               {team.length}/6
             </span>
           </h2>
+          {team.length > 0 && <TeamExport team={team} playthroughName={run.name} />}
         </div>
 
         <TeamGrid

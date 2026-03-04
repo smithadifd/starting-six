@@ -325,14 +325,41 @@ export function getTeamMembers(playthroughId: number): TeamMemberWithDetails[] {
     .orderBy(teamMembers.slot)
     .all();
 
+  if (rows.length === 0) return [];
+
+  // Batch fetch all referenced entities (4 queries instead of 37)
+  const pokemonIds = [...new Set(rows.map((r) => r.pokemonId))];
+  const abilityIds = [...new Set(
+    rows.map((r) => r.abilityId).filter((id): id is number => id !== null),
+  )];
+  const moveIds = [...new Set(
+    rows.flatMap((r) => [r.moveOneId, r.moveTwoId, r.moveThreeId, r.moveFourId])
+      .filter((id): id is number => id !== null),
+  )];
+
+  const pokemonMap = new Map(
+    db.select().from(pokemon).where(inArray(pokemon.id, pokemonIds)).all()
+      .map((p) => [p.id, p]),
+  );
+  const abilityMap = new Map(
+    abilityIds.length > 0
+      ? db.select().from(abilities).where(inArray(abilities.id, abilityIds)).all()
+        .map((a) => [a.id, a])
+      : [],
+  );
+  const moveMap = new Map(
+    moveIds.length > 0
+      ? db.select().from(moves).where(inArray(moves.id, moveIds)).all()
+        .map((m) => [m.id, m])
+      : [],
+  );
+
   return rows
     .map((row) => {
-      const poke = db.select().from(pokemon).where(eq(pokemon.id, row.pokemonId)).get();
+      const poke = pokemonMap.get(row.pokemonId);
       if (!poke) return null; // Orphaned team member — pokemon was deleted
 
-      const abil = row.abilityId
-        ? db.select().from(abilities).where(eq(abilities.id, row.abilityId)).get() ?? null
-        : null;
+      const abil = row.abilityId ? abilityMap.get(row.abilityId) ?? null : null;
 
       const moveSlots: Array<{ slot: number; moveId: number | null }> = [
         { slot: 1, moveId: row.moveOneId },
@@ -344,7 +371,7 @@ export function getTeamMembers(playthroughId: number): TeamMemberWithDetails[] {
       const memberMoves = moveSlots
         .filter((ms) => ms.moveId !== null)
         .map((ms) => {
-          const move = db.select().from(moves).where(eq(moves.id, ms.moveId!)).get();
+          const move = moveMap.get(ms.moveId!);
           return move ? { slot: ms.slot, move } : null;
         })
         .filter((m): m is NonNullable<typeof m> => m !== null);

@@ -122,6 +122,13 @@ function ensureSchema(sqlite: BetterSqlite3.Database) {
     );
     CREATE UNIQUE INDEX IF NOT EXISTS playthrough_slot_idx ON team_members (playthrough_id, slot);
 
+    -- Performance indexes for common queries
+    CREATE INDEX IF NOT EXISTS idx_playthroughs_user_id ON playthroughs (user_id);
+    CREATE INDEX IF NOT EXISTS idx_team_members_playthrough_id ON team_members (playthrough_id);
+    CREATE INDEX IF NOT EXISTS idx_pokemon_generation ON pokemon (generation);
+    CREATE INDEX IF NOT EXISTS idx_pokemon_type_one ON pokemon (type_one);
+    CREATE INDEX IF NOT EXISTS idx_pokemon_type_two ON pokemon (type_two);
+
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL,
