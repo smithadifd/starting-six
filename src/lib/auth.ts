@@ -31,10 +31,9 @@ function createAuth(): Auth {
     },
 
     trustedOrigins: [
-      'https://starting-six.home',
-      'http://192.168.50.88:3002',
+      process.env.NEXT_PUBLIC_APP_URL,
       'http://localhost:3000',
-    ],
+    ].filter(Boolean) as string[],
 
     plugins: [
       nextCookies(),
