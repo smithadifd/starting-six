@@ -3,13 +3,13 @@
 # ============================================
 
 # --- Dependencies ---
-FROM node:22-alpine AS deps
+FROM node:25-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci --only=production
 
 # --- Builder ---
-FROM node:22-alpine AS builder
+FROM node:25-alpine AS builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
@@ -23,7 +23,7 @@ RUN npm run build
 RUN mkdir -p /app/public /app/drizzle/meta
 
 # --- Runner ---
-FROM node:22-alpine AS runner
+FROM node:25-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
