@@ -6,8 +6,7 @@
  */
 
 import Database from 'better-sqlite3';
-import { randomBytes } from 'crypto';
-import { scrypt } from '@noble/hashes/scrypt.js';
+import { randomBytes, scryptSync } from 'crypto';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -15,14 +14,18 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const DB_PATH = process.env.DATABASE_URL || join(ROOT, 'data', 'starting-six.db');
 
-function bytesToHex(bytes) {
-  return Buffer.from(bytes).toString('hex');
-}
-
+/**
+ * Hash password using the same format as Better Auth:
+ * hex(salt):hex(scrypt_key) with N=16384, r=16, p=1, dkLen=64
+ */
 function hashPassword(password) {
-  const salt = randomBytes(16);
-  const key = scrypt(password, salt, { N: 16384, r: 16, p: 1, dkLen: 64 });
-  return `${bytesToHex(salt)}:${bytesToHex(key)}`;
+  const salt = randomBytes(16).toString('hex');
+  // Better Auth passes strings, uses maxmem: 128 * N * r * 2
+  const key = scryptSync(
+    password.normalize('NFKC'), salt, 64,
+    { N: 16384, r: 16, p: 1, maxmem: 128 * 16384 * 16 * 2 }
+  );
+  return `${salt}:${key.toString('hex')}`;
 }
 
 function generateId() {
