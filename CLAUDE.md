@@ -250,6 +250,30 @@ Security, testing, performance, UX polish, competitive features.
 
 ---
 
+## Demo Mode
+
+When `DEMO_MODE=true` (public demo at https://starting-six.smithadifd.com):
+- Demo credentials shown on login page (`demo@example.com` / `demo1234!`)
+- PokéAPI sync and settings mutations return 403
+- Registration blocked (only demo account exists)
+- Session expiry reduced to 24h (vs 30 days)
+- Data resets weekly (Sunday 4am UTC via EC2 cron)
+- Demo banner at top of every page with GitHub link
+
+Files:
+- `src/lib/demo.ts` — `isDemoMode()` utility + constants
+- `src/components/layout/DemoBanner.tsx` — persistent amber banner
+- `data/demo/demo-seed.db` — pre-synced PokéAPI data (3.5MB, committed)
+- `scripts/seed-demo.mjs` — creates demo user + 3 sample playthroughs
+- `docker-compose.demo.yml` — port 3012, DEMO_MODE=true
+- `scripts/deploy-demo.sh` — deploys to EC2 demo server
+
+When building new features:
+- New mutation endpoints must check demo mode in `proxy.ts` and block if true
+- `NEXT_PUBLIC_DEMO_MODE` controls client-side demo UI (login page credentials)
+
+---
+
 ## Environment Variables
 
 | Variable | Required | Description |
@@ -257,6 +281,8 @@ Security, testing, performance, UX polish, competitive features.
 | `DATABASE_URL` | No | SQLite path (default: `./data/starting-six.db`) |
 | `BETTER_AUTH_SECRET` | Yes | Session encryption key |
 | `NEXT_PUBLIC_APP_URL` | Yes (prod) | App URL (inlined at build time) |
+| `DEMO_MODE` | No | Set to `true` for demo mode (server-side) |
+| `NEXT_PUBLIC_DEMO_MODE` | No | Set to `true` for demo mode (client-side) |
 
 ---
 
