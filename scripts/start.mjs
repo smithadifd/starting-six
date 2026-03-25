@@ -1,17 +1,21 @@
 /**
  * Production startup script
  * Runs Drizzle migrations then starts the Next.js standalone server.
+ * In demo mode: copies seed DB if data volume is empty, then seeds demo user.
  */
 
 import Database from 'better-sqlite3';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, copyFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const DB_PATH = process.env.DATABASE_URL || join(ROOT, 'data', 'starting-six.db');
 const MIGRATIONS_DIR = join(ROOT, 'drizzle');
+const DEMO_MODE = process.env.DEMO_MODE === 'true';
+const DEMO_SEED_PATH = join(ROOT, 'data', 'demo', 'demo-seed.db');
 
 function runMigrations() {
   console.log('[startup] Running database migrations...');
@@ -81,10 +85,48 @@ function runMigrations() {
   console.log(migrationsRan > 0 ? `[startup] Applied ${migrationsRan} migration(s)` : '[startup] Database is up to date');
 }
 
+function seedDemoData() {
+  if (!DEMO_MODE) return;
+
+  // If DB doesn't exist or is empty, copy the seed DB
+  const dataDir = dirname(DB_PATH);
+  mkdirSync(dataDir, { recursive: true });
+
+  if (!existsSync(DB_PATH) || isDatabaseEmpty()) {
+    if (existsSync(DEMO_SEED_PATH)) {
+      console.log('[startup] Demo mode: copying seed database...');
+      copyFileSync(DEMO_SEED_PATH, DB_PATH);
+    } else {
+      console.log('[startup] Demo mode: no seed DB found at', DEMO_SEED_PATH);
+    }
+  }
+
+  // Run demo seed script (creates user + playthroughs, skips if already exists)
+  console.log('[startup] Demo mode: running seed script...');
+  execSync(`node ${join(ROOT, 'scripts', 'seed-demo.mjs')}`, {
+    stdio: 'inherit',
+    env: { ...process.env, DATABASE_URL: DB_PATH },
+  });
+}
+
+function isDatabaseEmpty() {
+  try {
+    const db = new Database(DB_PATH, { readonly: true });
+    const row = db.prepare("SELECT COUNT(*) as count FROM pokemon").get();
+    db.close();
+    return (row?.count ?? 0) === 0;
+  } catch {
+    return true;
+  }
+}
+
 try {
+  if (DEMO_MODE) {
+    seedDemoData();
+  }
   runMigrations();
 } catch (error) {
-  console.error('[startup] Migration failed:', error);
+  console.error('[startup] Startup failed:', error);
   process.exit(1);
 }
 

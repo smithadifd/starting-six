@@ -15,10 +15,12 @@ tsconfig.tsbuildinfo
 .env*.local
 
 # Database
-data/
+data/*
+!data/demo/
 *.db
 *.db-shm
 *.db-wal
+!data/demo/demo-seed.db
 
 # Private docs
 CLAUDE.local.md

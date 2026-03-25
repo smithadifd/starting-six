@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionCookie } from 'better-auth/cookies';
 
+const DEMO_MODE = process.env.DEMO_MODE === 'true';
+
+/** Endpoints blocked in demo mode (method + path prefix) */
+const DEMO_BLOCKED: { method: string; prefix: string }[] = [
+  { method: 'POST', prefix: '/api/sync' },
+  { method: 'PUT', prefix: '/api/settings' },
+  { method: 'PATCH', prefix: '/api/settings' },
+  { method: 'POST', prefix: '/api/setup' },
+];
+
 const PUBLIC_PATHS = ['/login', '/setup', '/api/auth', '/api/setup', '/api/health'];
 
 const STATIC_PREFIXES = [
@@ -100,6 +110,19 @@ function applyRateLimit(request: NextRequest): NextResponse | null {
 
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  // Block mutations in demo mode
+  if (DEMO_MODE) {
+    const method = request.method;
+    for (const rule of DEMO_BLOCKED) {
+      if (method === rule.method && pathname.startsWith(rule.prefix)) {
+        return NextResponse.json(
+          { error: 'This action is disabled in demo mode.' },
+          { status: 403 }
+        );
+      }
+    }
+  }
 
   if (STATIC_PREFIXES.some(p => pathname === p || pathname.startsWith(p))) {
     return NextResponse.next();
