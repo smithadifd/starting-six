@@ -266,7 +266,10 @@ Files:
 - `data/demo/demo-seed.db` — pre-synced PokéAPI data (3.5MB, committed)
 - `scripts/seed-demo.mjs` — creates demo user + 3 sample playthroughs
 - `docker-compose.demo.yml` — port 3012, DEMO_MODE=true
-- `scripts/deploy-demo.sh` — deploys to EC2 demo server
+- `scripts/deploy-demo.sh` — manual deploy to EC2 demo server
+- **Auto-deploy**: EC2 cron polls for new commits on main every 5 minutes, builds and deploys automatically (see `demo-infra/scripts/auto-deploy.sh`)
+- **Weekly reset**: EC2 cron deletes data volume + restarts container Sunday 4am UTC (see `demo-infra/scripts/reset-demos.sh`)
+- **Deploy log**: `/var/log/demo-deploy.log` on EC2
 
 When building new features:
 - New mutation endpoints must check demo mode in `proxy.ts` and block if true
