@@ -58,7 +58,7 @@ export function AbilitySelector({ pokemonId, currentAbility, onSelect }: Ability
     <div ref={containerRef} className="relative">
       <button
         onClick={handleOpen}
-        className="w-full flex items-center justify-between gap-1 rounded-md border border-input bg-background px-2 py-1.5 text-xs hover:bg-secondary/50 transition-colors"
+        className="w-full flex items-center justify-between gap-1 rounded-xl border border-white/[0.08] bg-surface-bright px-2 py-1.5 text-xs hover:bg-white/[0.05] transition-colors"
       >
         <span className={currentAbility ? '' : 'text-muted-foreground'}>
           {currentAbility?.name ?? 'Ability'}
@@ -67,7 +67,7 @@ export function AbilitySelector({ pokemonId, currentAbility, onSelect }: Ability
       </button>
 
       {open && (
-        <div className="absolute z-40 top-full left-0 right-0 mt-1 rounded-md border border-border bg-card shadow-lg">
+        <div className="absolute z-40 top-full left-0 right-0 mt-1 rounded-xl ghost-border bg-card shadow-2xl">
           <div className="p-1">
             {loading ? (
               <p className="text-xs text-muted-foreground text-center py-4">Loading...</p>
@@ -81,14 +81,14 @@ export function AbilitySelector({ pokemonId, currentAbility, onSelect }: Ability
                     onSelect(a.id);
                     setOpen(false);
                   }}
-                  className={`w-full text-left px-2 py-2 rounded text-xs hover:bg-secondary transition-colors ${
-                    currentAbility?.id === a.id ? 'bg-secondary' : ''
+                  className={`w-full text-left px-2 py-2 rounded-lg text-xs hover:bg-white/[0.05] transition-colors ${
+                    currentAbility?.id === a.id ? 'bg-white/[0.05]' : ''
                   }`}
                 >
                   <div className="flex items-center gap-1.5">
                     <span className="font-medium">{a.name}</span>
                     {a.isHidden && (
-                      <span className="text-[9px] px-1 py-0.5 rounded bg-secondary text-muted-foreground">
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-surface-bright text-muted-dim font-label">
                         Hidden
                       </span>
                     )}

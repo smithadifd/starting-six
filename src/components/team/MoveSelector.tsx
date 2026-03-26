@@ -85,7 +85,7 @@ export function MoveSelector({ pokemonId, slot, currentMove, onSelect }: MoveSel
     <div ref={containerRef} className="relative">
       <button
         onClick={handleOpen}
-        className="w-full flex items-center justify-between gap-1 rounded-md border border-input bg-background px-2 py-1.5 text-xs hover:bg-secondary/50 transition-colors"
+        className="w-full flex items-center justify-between gap-1 rounded-xl border border-white/[0.08] bg-surface-bright px-2 py-1.5 text-xs hover:bg-white/[0.05] transition-colors"
       >
         {currentMove ? (
           <span className="flex items-center gap-1.5 truncate">
@@ -102,8 +102,8 @@ export function MoveSelector({ pokemonId, slot, currentMove, onSelect }: MoveSel
       </button>
 
       {open && (
-        <div className="absolute z-40 top-full left-0 mt-1 rounded-md border border-border bg-card shadow-lg max-h-72 flex flex-col w-72 sm:w-80">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+        <div className="absolute z-40 top-full left-0 mt-1 rounded-xl ghost-border bg-card shadow-2xl max-h-72 flex flex-col w-72 sm:w-80">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.05]">
             <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <input
               ref={inputRef}
@@ -133,8 +133,8 @@ export function MoveSelector({ pokemonId, slot, currentMove, onSelect }: MoveSel
                 <button
                   key={m.id}
                   onClick={() => handleSelect(m.id)}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded text-left text-xs hover:bg-secondary transition-colors ${
-                    currentMove?.id === m.id ? 'bg-secondary' : ''
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs hover:bg-white/[0.05] transition-colors ${
+                    currentMove?.id === m.id ? 'bg-white/[0.05]' : ''
                   }`}
                 >
                   <span

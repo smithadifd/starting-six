@@ -1,12 +1,28 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans, Manrope, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { PwaProvider } from '@/components/layout/PwaProvider';
 import { DemoBanner } from '@/components/layout/DemoBanner';
 import { getSession } from '@/lib/auth-helpers';
 
-const inter = Inter({ subsets: ['latin'] });
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  variable: '--font-jakarta',
+});
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-manrope',
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['500', '700'],
+  variable: '--font-space',
+});
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +45,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#1a1a2e',
+  themeColor: '#0E0E0E',
 };
 
 export default async function RootLayout({
@@ -49,7 +65,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="dark">
-      <body className={inter.className}>
+      <body className={`${jakarta.variable} ${manrope.variable} ${spaceGrotesk.variable} font-body`}>
         <DemoBanner />
         <PwaProvider>
           <LayoutShell user={user}>

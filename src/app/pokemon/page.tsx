@@ -13,10 +13,12 @@ export default async function PokemonPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Pokémon</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Browse all Pokémon — search, filter by type or generation
+      <div className="mb-10">
+        <h1 className="text-4xl md:text-5xl font-headline font-extrabold tracking-tighter">
+          Pokémon
+        </h1>
+        <p className="text-base text-muted-foreground mt-2 font-body max-w-lg">
+          Browse every Pokémon across all generations. Search by name, filter by type or generation.
         </p>
       </div>
       <PokemonGrid />

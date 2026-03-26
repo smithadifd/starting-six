@@ -40,14 +40,14 @@ export function PokemonSearch({
     <div className="flex flex-col sm:flex-row gap-3">
       {/* Search input */}
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-dim" />
         <input
           ref={inputRef}
           type="text"
           defaultValue={search}
           onInput={handleSearchInput}
           placeholder="Search Pokémon..."
-          className="w-full rounded-md border border-input bg-background pl-9 pr-8 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full rounded-xl border border-white/[0.08] bg-surface-bright pl-9 pr-8 py-2.5 text-sm font-body placeholder:text-muted-dim focus:outline-none focus:ring-2 focus:ring-red-500/50"
         />
         {search && (
           <button
@@ -63,7 +63,7 @@ export function PokemonSearch({
       <select
         value={type}
         onChange={(e) => onTypeChange(e.target.value)}
-        className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        className="rounded-xl border border-white/[0.08] bg-surface-bright px-3 py-2.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-red-500/50"
       >
         <option value="">All Types</option>
         {POKEMON_TYPES.map((t) => (
@@ -77,7 +77,7 @@ export function PokemonSearch({
       <select
         value={generation}
         onChange={(e) => onGenerationChange(e.target.value)}
-        className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        className="rounded-xl border border-white/[0.08] bg-surface-bright px-3 py-2.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-red-500/50"
       >
         <option value="">All Gens</option>
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((g) => (

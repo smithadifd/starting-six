@@ -156,7 +156,7 @@ export function PlaythroughActions({ playthroughId, isCompleted, currentName, cu
                 <button
                   onClick={handleEdit}
                   disabled={saving || !name.trim()}
-                  className="flex-1 rounded-md bg-red-500 px-3 py-2 text-sm text-white hover:bg-red-500/90 transition-colors disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-red-500 px-3 py-2 text-sm text-white hover:bg-red-500/90 transition-colors disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>

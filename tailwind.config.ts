@@ -31,6 +31,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        headline: ['var(--font-jakarta)', 'Plus Jakarta Sans', 'sans-serif'],
+        body: ['var(--font-manrope)', 'Manrope', 'sans-serif'],
+        label: ['var(--font-space)', 'Space Grotesk', 'sans-serif'],
+      },
       colors: {
         // shadcn/ui CSS variable colors
         border: 'hsl(var(--border))',
@@ -66,11 +71,17 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        // Surface hierarchy
+        'surface-low': 'hsl(var(--surface-low))',
+        'surface-mid': 'hsl(var(--surface-mid))',
+        'surface-high': 'hsl(var(--surface-high))',
+        'surface-bright': 'hsl(var(--surface-bright))',
+        'muted-dim': 'hsl(var(--muted-dim))',
       },
       borderRadius: {
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 4px)',
+        sm: 'calc(var(--radius) - 8px)',
       },
     },
   },

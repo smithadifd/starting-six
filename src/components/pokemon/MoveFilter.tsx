@@ -29,7 +29,7 @@ function DamageClassBadge({ damageClass }: { damageClass: string }) {
     status: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
   };
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${colors[damageClass] ?? colors.status}`}>
+    <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-label ${colors[damageClass] ?? colors.status}`}>
       {damageClass}
     </span>
   );
@@ -52,8 +52,8 @@ export function MoveFilter({ moves, typeColors }: MoveFilterProps) {
   const hasFilters = search || typeFilter !== 'All' || classFilter !== 'All';
 
   return (
-    <div className="rounded-lg border border-border bg-card p-6 mt-6">
-      <h2 className="font-semibold mb-4">
+    <div className="rounded-xl ghost-border bg-card p-6 mt-6">
+      <h2 className="font-headline font-bold mb-4">
         Learnset{' '}
         <span className="text-sm font-normal text-muted-foreground">
           ({hasFilters ? `${filtered.length} / ${moves.length}` : `${moves.length}`} moves)
@@ -73,13 +73,13 @@ export function MoveFilter({ moves, typeColors }: MoveFilterProps) {
                 placeholder="Search moves..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-md border border-input bg-background pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border border-white/[0.08] bg-surface-bright pl-8 pr-3 py-2 text-sm font-body focus:outline-none focus:ring-2 focus:ring-red-500/50"
               />
             </div>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="rounded-xl border border-white/[0.08] bg-surface-bright px-3 py-2 text-sm font-body focus:outline-none focus:ring-2 focus:ring-red-500/50"
             >
               <option value="All">All Types</option>
               {POKEMON_TYPES.map((t) => (
@@ -89,7 +89,7 @@ export function MoveFilter({ moves, typeColors }: MoveFilterProps) {
             <select
               value={classFilter}
               onChange={(e) => setClassFilter(e.target.value)}
-              className="rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="rounded-xl border border-white/[0.08] bg-surface-bright px-3 py-2 text-sm font-body focus:outline-none focus:ring-2 focus:ring-red-500/50"
             >
               {DAMAGE_CLASSES.map((c) => (
                 <option key={c} value={c}>{c === 'All' ? 'All Classes' : c}</option>
@@ -104,22 +104,22 @@ export function MoveFilter({ moves, typeColors }: MoveFilterProps) {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border text-left">
-                    <th className="pb-2 pr-4 text-xs text-muted-foreground font-medium">Move</th>
-                    <th className="pb-2 pr-4 text-xs text-muted-foreground font-medium">Type</th>
-                    <th className="pb-2 pr-4 text-xs text-muted-foreground font-medium">Cat.</th>
-                    <th className="pb-2 pr-4 text-xs text-muted-foreground font-medium text-right">Pow</th>
-                    <th className="pb-2 pr-4 text-xs text-muted-foreground font-medium text-right">Acc</th>
-                    <th className="pb-2 text-xs text-muted-foreground font-medium text-right">PP</th>
+                  <tr className="border-b border-white/[0.05] text-left">
+                    <th className="pb-2 pr-4 text-xs text-muted-dim font-label">Move</th>
+                    <th className="pb-2 pr-4 text-xs text-muted-dim font-label">Type</th>
+                    <th className="pb-2 pr-4 text-xs text-muted-dim font-label">Cat.</th>
+                    <th className="pb-2 pr-4 text-xs text-muted-dim font-label text-right">Pow</th>
+                    <th className="pb-2 pr-4 text-xs text-muted-dim font-label text-right">Acc</th>
+                    <th className="pb-2 text-xs text-muted-dim font-label text-right">PP</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((pm) => (
-                    <tr key={pm.move.id} className="border-b border-border/50 last:border-0">
-                      <td className="py-1.5 pr-4 font-medium">{pm.move.name}</td>
+                    <tr key={pm.move.id} className="border-b border-white/[0.03] last:border-0">
+                      <td className="py-2 pr-4 font-headline font-bold text-sm">{pm.move.name}</td>
                       <td className="py-1.5 pr-4">
                         <span
-                          className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase text-white"
+                          className="inline-block px-2 py-0.5 rounded-full text-[10px] font-label font-bold uppercase text-white"
                           style={{ backgroundColor: typeColors[pm.move.type] ?? '#888' }}
                         >
                           {pm.move.type}
@@ -128,13 +128,13 @@ export function MoveFilter({ moves, typeColors }: MoveFilterProps) {
                       <td className="py-1.5 pr-4">
                         <DamageClassBadge damageClass={pm.move.damageClass} />
                       </td>
-                      <td className="py-1.5 pr-4 text-right font-mono">
+                      <td className="py-1.5 pr-4 text-right font-label">
                         {pm.move.power ?? '—'}
                       </td>
-                      <td className="py-1.5 pr-4 text-right font-mono">
+                      <td className="py-1.5 pr-4 text-right font-label">
                         {pm.move.accuracy ? `${pm.move.accuracy}%` : '—'}
                       </td>
-                      <td className="py-1.5 text-right font-mono">{pm.move.pp}</td>
+                      <td className="py-1.5 text-right font-label">{pm.move.pp}</td>
                     </tr>
                   ))}
                 </tbody>
