@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https://raw.githubusercontent.com",
               "font-src 'self' data:",
-              "connect-src 'self'",
+              "connect-src 'self' https://raw.githubusercontent.com",
               "frame-src 'none'",
               "object-src 'none'",
               "base-uri 'self'",
