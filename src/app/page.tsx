@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { BookOpen, Swords, Plus, Gamepad2 } from 'lucide-react';
+import { BookOpen, Plus, Gamepad2 } from 'lucide-react';
 import { requireUserId } from '@/lib/auth-helpers';
 import { getPlaythroughs, getTeamMembers } from '@/lib/db/queries';
 import { redirect } from 'next/navigation';
