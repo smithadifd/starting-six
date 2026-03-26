@@ -6,11 +6,32 @@ REMOTE_PATH="/opt/demos/starting-six"
 REPO_URL="https://github.com/smithadifd/starting-six.git"
 COMPOSE_FILE="docker-compose.demo.yml"
 APP_PORT=3012
+INFRA_DIR="${DEMO_INFRA_DIR:-$HOME/demo-infra}"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
+
+# --- Ensure SSH access (auto-update security group if IP changed) ---
+ensure_ssh_access() {
+    if [ ! -f "$INFRA_DIR/terraform.tfvars" ]; then
+        warn "demo-infra not found at $INFRA_DIR — skipping IP check"
+        return 0
+    fi
+
+    local current_ip tfvars_ip
+    current_ip=$(curl -s --max-time 5 ifconfig.me)
+    tfvars_ip=$(grep 'admin_ip' "$INFRA_DIR/terraform.tfvars" | sed 's/.*"\(.*\)".*/\1/')
+
+    if [[ "$current_ip" != "$tfvars_ip" ]]; then
+        warn "Admin IP changed ($tfvars_ip -> $current_ip). Updating security group..."
+        (cd "$INFRA_DIR" && ./update-ip.sh)
+        info "Security group updated."
+    else
+        info "Admin IP unchanged ($current_ip)."
+    fi
+}
 
 preflight() {
     info "Running pre-flight checks..."
@@ -60,14 +81,29 @@ if [ ! -f ".env.demo" ]; then
     exit 1
 fi
 
+echo ""
+echo "--- Stopping all containers to free memory for build ---"
+docker stop \$(docker ps -q) 2>/dev/null || true
+
 echo "--- Building Docker image ---"
 docker compose -f "$COMPOSE_FILE" --env-file .env.demo build
 
 echo "--- Starting containers ---"
 docker compose -f "$COMPOSE_FILE" --env-file .env.demo up -d
 
+echo ""
+echo "--- Restarting other demo services ---"
+for dir in /opt/demos/*/; do
+    [ "\$dir" = "$REMOTE_PATH/" ] && continue
+    if [ -f "\$dir/docker-compose.demo.yml" ] && [ -f "\$dir/.env.demo" ]; then
+        echo "Restarting \$(basename \$dir)..."
+        (cd "\$dir" && docker compose -f docker-compose.demo.yml --env-file .env.demo up -d) || true
+    fi
+done
+
+echo ""
 echo "--- Container status ---"
-docker compose -f "$COMPOSE_FILE" ps
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 REMOTE_SCRIPT
 
     info "Deploy complete."
@@ -97,6 +133,7 @@ main() {
     echo "  Starting Six - Deploy to Demo Server"
     echo "========================================="
     echo ""
+    ensure_ssh_access
     preflight
     deploy
     healthcheck
