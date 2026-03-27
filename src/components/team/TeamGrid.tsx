@@ -5,6 +5,8 @@ import { Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TeamMemberCard } from './TeamMemberCard';
 import { PokemonSearchModal } from './PokemonSearchModal';
+import { BenchSection } from './BenchSection';
+import { TeamAnalysis } from './TeamAnalysis';
 
 interface MoveData {
   id: number;
@@ -19,7 +21,7 @@ interface MoveData {
 
 interface TeamMember {
   id: number;
-  slot: number;
+  slot: number | null;
   nickname: string | null;
   teraType: string | null;
   pokemon: {
@@ -42,16 +44,21 @@ interface TeamGridProps {
 }
 
 export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGridProps) {
-  const [team, setTeam] = useState<TeamMember[]>(initialTeam);
+  const [allMembers, setAllMembers] = useState<TeamMember[]>(initialTeam);
   const [searchOpen, setSearchOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [teamRevision, setTeamRevision] = useState(0);
+
+  const activeMembers = allMembers.filter((m) => m.slot !== null).sort((a, b) => a.slot! - b.slot!);
+  const benchMembers = allMembers.filter((m) => m.slot === null);
 
   const refreshTeam = useCallback(async () => {
     try {
       const res = await fetch(`/api/playthroughs/${playthroughId}/team`);
       if (!res.ok) return;
       const json = await res.json();
-      setTeam(json.data);
+      setAllMembers(json.data);
+      setTeamRevision((r) => r + 1);
     } catch {
       // Silently fail — user can refresh
     }
@@ -59,7 +66,7 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
 
   // Sync initialTeam on mount
   useEffect(() => {
-    setTeam(initialTeam);
+    setAllMembers(initialTeam);
   }, [initialTeam]);
 
   const handleAddPokemon = useCallback(async (poke: { id: number }) => {
@@ -75,8 +82,9 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
         toast.error(json.error || 'Failed to add Pokémon');
         return;
       }
+      const json = await res.json();
       await refreshTeam();
-      toast.success('Added to team');
+      toast.success(json.data?.benched ? 'Added to bench' : 'Added to team');
     } catch {
       toast.error('Failed to add Pokémon');
     } finally {
@@ -95,18 +103,38 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
     }
   }, [playthroughId, refreshTeam]);
 
-  const emptySlots = 6 - team.length;
+  const handleBench = useCallback(async (memberId: number) => {
+    try {
+      const res = await fetch(`/api/playthroughs/${playthroughId}/team/${memberId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'bench' }),
+      });
+      if (!res.ok) {
+        const json = await res.json();
+        toast.error(json.error || 'Failed to bench');
+        return;
+      }
+      toast.success('Moved to bench');
+      await refreshTeam();
+    } catch {
+      toast.error('Failed to bench');
+    }
+  }, [playthroughId, refreshTeam]);
+
+  const emptySlots = 6 - activeMembers.length;
 
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {team.map((member) => (
+        {activeMembers.map((member) => (
           <TeamMemberCard
             key={member.id}
             member={member}
             playthroughId={playthroughId}
             onUpdate={refreshTeam}
             onRemove={handleRemove}
+            onBench={handleBench}
           />
         ))}
 
@@ -132,12 +160,25 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
         ))}
       </div>
 
+      <BenchSection
+        benchMembers={benchMembers}
+        activeMembers={activeMembers}
+        playthroughId={playthroughId}
+        versionGroupId={versionGroupId}
+        onRefresh={refreshTeam}
+      />
+
       <PokemonSearchModal
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         onSelect={handleAddPokemon}
         versionGroupId={versionGroupId}
       />
+
+      {/* Analysis Section */}
+      <div className="mt-8">
+        <TeamAnalysis playthroughId={playthroughId} teamSize={activeMembers.length} teamRevision={teamRevision} />
+      </div>
     </>
   );
 }

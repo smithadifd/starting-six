@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { BarChart3, Shield, Swords, Users, Sparkles, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { TYPE_COLORS } from '../../../tailwind.config';
 import type { PokemonType } from '@/types';
@@ -48,13 +48,24 @@ interface AnalysisData {
 interface TeamAnalysisProps {
   playthroughId: number;
   teamSize: number;
+  /** Increment to trigger re-fetch (e.g. on swap, bench, activate) */
+  teamRevision?: number;
 }
 
-export function TeamAnalysis({ playthroughId, teamSize }: TeamAnalysisProps) {
+export function TeamAnalysis({ playthroughId, teamSize, teamRevision = 0 }: TeamAnalysisProps) {
   const [data, setData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
+  const prevRevision = useRef(teamRevision);
+
+  // Re-fetch when team composition changes if analysis was already loaded
+  useEffect(() => {
+    if (prevRevision.current !== teamRevision && data) {
+      fetchAnalysis();
+    }
+    prevRevision.current = teamRevision;
+  });
 
   const fetchAnalysis = useCallback(async () => {
     setLoading(true);

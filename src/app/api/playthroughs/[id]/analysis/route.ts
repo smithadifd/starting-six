@@ -27,7 +27,7 @@ export async function GET(
   const run = getPlaythrough(playthroughId, userId);
   if (!run) return apiNotFound('Playthrough');
 
-  const team = getTeamMembers(playthroughId);
+  const team = getTeamMembers(playthroughId, 'active');
   if (team.length === 0) {
     return apiError('Add at least one Pokémon to analyze', 400);
   }

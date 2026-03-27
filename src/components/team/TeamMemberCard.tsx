@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import Image from 'next/image';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ArrowDownToLine } from 'lucide-react';
 import { TypeBadge } from '@/components/pokemon/TypeBadge';
 import { MoveSelector } from './MoveSelector';
 import { AbilitySelector } from './AbilitySelector';
@@ -22,7 +22,7 @@ interface MoveData {
 
 interface TeamMember {
   id: number;
-  slot: number;
+  slot: number | null;
   nickname: string | null;
   teraType: string | null;
   pokemon: {
@@ -43,9 +43,10 @@ interface TeamMemberCardProps {
   playthroughId: number;
   onUpdate: () => void;
   onRemove: (memberId: number) => void;
+  onBench?: (memberId: number) => void;
 }
 
-export function TeamMemberCard({ member, playthroughId, onUpdate, onRemove }: TeamMemberCardProps) {
+export function TeamMemberCard({ member, playthroughId, onUpdate, onRemove, onBench }: TeamMemberCardProps) {
   const updateField = useCallback(async (data: Record<string, unknown>) => {
     const res = await fetch(`/api/playthroughs/${playthroughId}/team/${member.id}`, {
       method: 'PATCH',
@@ -120,13 +121,24 @@ export function TeamMemberCard({ member, playthroughId, onUpdate, onRemove }: Te
             <h3 className="text-sm font-headline font-bold truncate">
               {member.nickname ?? member.pokemon.name}
             </h3>
-            <button
-              onClick={() => onRemove(member.id)}
-              className="text-muted-dim hover:text-red-500 transition-colors ml-auto shrink-0"
-              title="Remove from team"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            <div className="flex items-center gap-1 ml-auto shrink-0">
+              {onBench && (
+                <button
+                  onClick={() => onBench(member.id)}
+                  className="text-muted-dim hover:text-blue-400 transition-colors"
+                  title="Move to bench"
+                >
+                  <ArrowDownToLine className="h-3.5 w-3.5" />
+                </button>
+              )}
+              <button
+                onClick={() => onRemove(member.id)}
+                className="text-muted-dim hover:text-red-500 transition-colors"
+                title="Remove from team"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
           {member.nickname && (
             <p className="text-[10px] text-muted-dim">{member.pokemon.name}</p>

@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   // Fetch team sprites for each run (lightweight — just need sprites)
   const runTeams = new Map<number, Array<{ name: string; sprite: string | null }>>();
   for (const run of runs) {
-    const team = getTeamMembers(run.id);
+    const team = getTeamMembers(run.id, 'active');
     runTeams.set(
       run.id,
       team.map((m) => ({ name: m.pokemon.name, sprite: m.pokemon.spriteDefault }))

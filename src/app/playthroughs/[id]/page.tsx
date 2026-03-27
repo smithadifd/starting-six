@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle2, Trophy } from 'lucide-react';
 import { requireUserId } from '@/lib/auth-helpers';
 import { getPlaythrough, getTeamMembers } from '@/lib/db/queries';
 import { TeamGrid } from '@/components/team/TeamGrid';
-import { TeamAnalysis } from '@/components/team/TeamAnalysis';
+
 import { TeamExport } from '@/components/team/TeamExport';
 import { PlaythroughActions } from './PlaythroughActions';
 
@@ -31,6 +31,8 @@ export default async function PlaythroughPage({
   if (!run) notFound();
 
   const team = getTeamMembers(playthroughId);
+  const activeCount = team.filter((m) => m.slot !== null).length;
+  const benchCount = team.filter((m) => m.slot === null).length;
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -79,9 +81,14 @@ export default async function PlaythroughPage({
             Adventure Team
           </h2>
           <span className="font-label text-red-500 bg-red-500/10 px-3 py-0.5 rounded-full text-sm tracking-wider">
-            {team.length}/6
+            {activeCount}/6
           </span>
-          {team.length > 0 && <TeamExport team={team} playthroughName={run.name} />}
+          {benchCount > 0 && (
+            <span className="font-label text-muted-dim bg-surface-bright px-3 py-0.5 rounded-full text-sm tracking-wider">
+              +{benchCount} bench
+            </span>
+          )}
+          {activeCount > 0 && <TeamExport team={team.filter((m) => m.slot !== null)} playthroughName={run.name} />}
         </div>
 
         {/* Team slots progress bar */}
@@ -89,7 +96,7 @@ export default async function PlaythroughPage({
           <div
             className="h-full bg-red-500 rounded-full transition-all"
             style={{
-              width: `${(team.length / 6) * 100}%`,
+              width: `${(activeCount / 6) * 100}%`,
               boxShadow: '0 0 10px rgba(239,68,68,0.5)',
             }}
           />
@@ -102,10 +109,6 @@ export default async function PlaythroughPage({
         />
       </div>
 
-      {/* Analysis Section */}
-      <div className="mb-8">
-        <TeamAnalysis playthroughId={playthroughId} teamSize={team.length} />
-      </div>
     </div>
   );
 }

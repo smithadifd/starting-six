@@ -276,7 +276,7 @@ export function deletePlaythrough(id: number, userId: string) {
 
 export interface TeamMemberWithDetails {
   id: number;
-  slot: number;
+  slot: number | null;
   nickname: string | null;
   teraType: string | null;
   pokemon: {
@@ -304,8 +304,18 @@ export interface TeamMemberWithDetails {
   }>;
 }
 
-export function getTeamMembers(playthroughId: number): TeamMemberWithDetails[] {
+export function getTeamMembers(
+  playthroughId: number,
+  filter: 'all' | 'active' | 'benched' = 'all',
+): TeamMemberWithDetails[] {
   const db = getDb();
+
+  const conditions = [eq(teamMembers.playthroughId, playthroughId)];
+  if (filter === 'active') {
+    conditions.push(sql`${teamMembers.slot} IS NOT NULL`);
+  } else if (filter === 'benched') {
+    conditions.push(sql`${teamMembers.slot} IS NULL`);
+  }
 
   const rows = db
     .select({
@@ -321,8 +331,8 @@ export function getTeamMembers(playthroughId: number): TeamMemberWithDetails[] {
       moveFourId: teamMembers.moveFourId,
     })
     .from(teamMembers)
-    .where(eq(teamMembers.playthroughId, playthroughId))
-    .orderBy(teamMembers.slot)
+    .where(and(...conditions))
+    .orderBy(sql`CASE WHEN ${teamMembers.slot} IS NULL THEN 1 ELSE 0 END, ${teamMembers.slot}, ${teamMembers.createdAt}`)
     .all();
 
   if (rows.length === 0) return [];
@@ -400,7 +410,7 @@ export function getTeamMembers(playthroughId: number): TeamMemberWithDetails[] {
 export function addTeamMember(data: {
   playthroughId: number;
   pokemonId: number;
-  slot: number;
+  slot: number | null;
   nickname?: string;
   abilityId?: number;
   teraType?: string;
@@ -444,14 +454,81 @@ export function getNextTeamSlot(playthroughId: number): number | null {
   const existing = db
     .select({ slot: teamMembers.slot })
     .from(teamMembers)
-    .where(eq(teamMembers.playthroughId, playthroughId))
+    .where(and(
+      eq(teamMembers.playthroughId, playthroughId),
+      sql`${teamMembers.slot} IS NOT NULL`,
+    ))
     .all()
-    .map((r) => r.slot);
+    .map((r) => r.slot!);
 
   for (let s = 1; s <= 6; s++) {
     if (!existing.includes(s)) return s;
   }
-  return null; // Team is full
+  return null; // Active team is full — will go to bench
+}
+
+export function swapTeamMember(
+  playthroughId: number,
+  benchMemberId: number,
+  activeSlot: number,
+) {
+  const db = getDb();
+
+  // Find the active member in this slot
+  const activeMember = db
+    .select({ id: teamMembers.id })
+    .from(teamMembers)
+    .where(and(
+      eq(teamMembers.playthroughId, playthroughId),
+      eq(teamMembers.slot, activeSlot),
+    ))
+    .get();
+
+  // Find the bench member
+  const benchMember = db
+    .select({ id: teamMembers.id, slot: teamMembers.slot })
+    .from(teamMembers)
+    .where(and(
+      eq(teamMembers.id, benchMemberId),
+      eq(teamMembers.playthroughId, playthroughId),
+    ))
+    .get();
+
+  if (!benchMember) throw new Error('Bench member not found');
+  if (benchMember.slot !== null) throw new Error('Member is not on the bench');
+
+  const now = sql`(datetime('now'))`;
+
+  if (activeMember) {
+    // Swap: bench the active member, activate the bench member
+    // Clear the active slot first to avoid unique constraint violation
+    db.update(teamMembers)
+      .set({ slot: null, updatedAt: now })
+      .where(eq(teamMembers.id, activeMember.id))
+      .run();
+  }
+
+  // Move bench member to the active slot
+  db.update(teamMembers)
+    .set({ slot: activeSlot, updatedAt: now })
+    .where(eq(teamMembers.id, benchMemberId))
+    .run();
+}
+
+export function benchTeamMember(memberId: number, playthroughId: number) {
+  const db = getDb();
+  db.update(teamMembers)
+    .set({ slot: null, updatedAt: sql`(datetime('now'))` })
+    .where(and(eq(teamMembers.id, memberId), eq(teamMembers.playthroughId, playthroughId)))
+    .run();
+}
+
+export function activateTeamMember(memberId: number, playthroughId: number, slot: number) {
+  const db = getDb();
+  db.update(teamMembers)
+    .set({ slot, updatedAt: sql`(datetime('now'))` })
+    .where(and(eq(teamMembers.id, memberId), eq(teamMembers.playthroughId, playthroughId)))
+    .run();
 }
 
 export function getPokemonById(id: number) {
