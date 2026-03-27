@@ -52,7 +52,7 @@ export function SystemSettings({ counts: initialCounts, recentLogs }: SystemSett
   return (
     <div className="space-y-6">
       {/* Data Counts */}
-      <div className="rounded-lg border border-border bg-card p-6">
+      <div className="rounded-xl ghost-border bg-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Database className="h-5 w-5 text-muted-foreground" />
           <h3 className="font-semibold">Synced Data</h3>
@@ -77,7 +77,7 @@ export function SystemSettings({ counts: initialCounts, recentLogs }: SystemSett
 
       {/* Sync history */}
       {recentLogs.length > 0 && (
-        <div className="rounded-lg border border-border bg-card p-6">
+        <div className="rounded-xl ghost-border bg-card p-6">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="h-5 w-5 text-muted-foreground" />
             <h3 className="font-semibold">Sync History</h3>

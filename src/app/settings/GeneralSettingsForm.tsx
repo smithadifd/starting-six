@@ -31,7 +31,7 @@ export function GeneralSettingsForm({ currentGame, versionGroups }: GeneralSetti
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-border bg-card p-6">
+      <div className="rounded-xl ghost-border bg-card p-6">
         <h3 className="font-semibold mb-1">Preferred Game</h3>
         <p className="text-sm text-muted-foreground mb-4">
           Set your current game to filter the Pokémon browser by default.
@@ -56,7 +56,7 @@ export function GeneralSettingsForm({ currentGame, versionGroups }: GeneralSetti
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-500/90 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-500/90 transition-colors disabled:opacity-50"
           >
             {saved ? (
               <>

@@ -27,7 +27,7 @@ export default async function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm">
-        <div className="rounded-lg border border-border bg-card p-6 shadow-lg">
+        <div className="rounded-xl ghost-border bg-card p-6 shadow-lg">
           <div className="flex items-center justify-center gap-2 mb-6">
             <Swords className="h-8 w-8 text-red-400" />
             <span className="text-2xl font-bold">Starting Six</span>

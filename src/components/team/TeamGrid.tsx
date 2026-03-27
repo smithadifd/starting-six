@@ -99,7 +99,7 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {team.map((member) => (
           <TeamMemberCard
             key={member.id}
@@ -116,14 +116,16 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
             key={`empty-${i}`}
             onClick={() => setSearchOpen(true)}
             disabled={loading}
-            className="rounded-lg border-2 border-dashed border-border bg-card/50 p-6 flex flex-col items-center justify-center gap-2 hover:border-red-400/50 hover:bg-card transition-colors min-h-[200px] disabled:opacity-50"
+            className="rounded-xl border-2 border-dashed border-white/10 bg-surface-low p-6 flex flex-col items-center justify-center gap-3 hover:border-red-500/40 hover:bg-surface-mid transition-all min-h-[200px] disabled:opacity-50"
           >
             {loading && i === 0 ? (
               <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
             ) : (
               <>
-                <Plus className="h-8 w-8 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Add Pokémon</span>
+                <div className="w-14 h-14 rounded-full bg-surface-bright flex items-center justify-center group-hover:bg-red-500 transition-colors">
+                  <Plus className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <span className="text-sm font-headline font-bold text-muted-foreground">Add Pokémon</span>
               </>
             )}
           </button>

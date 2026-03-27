@@ -81,7 +81,7 @@ export function NewPlaythroughForm({ versionGroups }: NewPlaythroughFormProps) {
           placeholder="e.g. Nuzlocke #3, First Playthrough"
           maxLength={100}
           required
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full rounded-xl border border-white/[0.08] bg-surface-bright px-3 py-2.5 text-sm font-body placeholder:text-muted-dim focus:outline-none focus:ring-2 focus:ring-red-500/50"
         />
       </div>
 
@@ -94,7 +94,7 @@ export function NewPlaythroughForm({ versionGroups }: NewPlaythroughFormProps) {
           value={versionGroupId}
           onChange={(e) => setVersionGroupId(e.target.value)}
           required
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full rounded-xl border border-white/[0.08] bg-surface-bright px-3 py-2.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-red-500/50"
         >
           <option value="">Select a game...</option>
           {Array.from(grouped.entries())
@@ -122,14 +122,14 @@ export function NewPlaythroughForm({ versionGroups }: NewPlaythroughFormProps) {
           placeholder="Any rules, goals, or notes for this run..."
           maxLength={500}
           rows={3}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+          className="w-full rounded-xl border border-white/[0.08] bg-surface-bright px-3 py-2.5 text-sm font-body placeholder:text-muted-dim focus:outline-none focus:ring-2 focus:ring-red-500/50 resize-none"
         />
       </div>
 
       <button
         type="submit"
         disabled={saving || !name.trim() || !versionGroupId}
-        className="flex items-center justify-center gap-2 w-full rounded-md bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-500/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center justify-center gap-2 w-full rounded-xl bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-500/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {saving && <Loader2 className="h-4 w-4 animate-spin" />}
         {saving ? 'Creating...' : 'Create Playthrough'}

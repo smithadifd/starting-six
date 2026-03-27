@@ -26,7 +26,7 @@ export default async function NewPlaythroughPage() {
         Back to Playthroughs
       </Link>
 
-      <div className="rounded-lg border border-border bg-card p-6">
+      <div className="rounded-xl ghost-border bg-card p-6">
         <h1 className="text-2xl font-bold mb-6">New Playthrough</h1>
         <NewPlaythroughForm
           versionGroups={versionGroups.map((vg) => ({

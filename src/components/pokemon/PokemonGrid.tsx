@@ -75,7 +75,7 @@ export function PokemonGrid() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <PokemonSearch
         search={search}
         type={type}
@@ -85,15 +85,15 @@ export function PokemonGrid() {
         onGenerationChange={setGeneration}
       />
 
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-muted-dim font-label">
         {total.toLocaleString()} Pokémon found
       </p>
 
       {total === 0 ? (
-        <div className="rounded-lg border border-border bg-card p-12 text-center">
-          <Database className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-lg font-semibold mb-2">No Pokémon found</h2>
-          <p className="text-sm text-muted-foreground">
+        <div className="rounded-xl ghost-border bg-card p-12 text-center">
+          <Database className="h-12 w-12 text-muted-dim mx-auto mb-4" />
+          <h2 className="text-lg font-headline font-bold mb-2">No Pokémon found</h2>
+          <p className="text-sm text-muted-foreground font-body">
             {pokemon.length === 0 && !search && !type && !generation
               ? 'Run a PokéAPI sync from Settings → System to import data.'
               : 'Try adjusting your filters.'}
@@ -101,7 +101,7 @@ export function PokemonGrid() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {pokemon.map((p) => (
               <PokemonCard key={p.slug} pokemon={p} />
             ))}
@@ -112,7 +112,7 @@ export function PokemonGrid() {
               <button
                 onClick={loadMore}
                 disabled={loading}
-                className="flex items-center gap-2 rounded-md border border-border bg-card px-6 py-2.5 text-sm font-medium hover:bg-secondary transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 rounded-full ghost-border bg-card px-8 py-3 text-sm font-headline font-bold hover:bg-white/[0.05] transition-all disabled:opacity-50"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

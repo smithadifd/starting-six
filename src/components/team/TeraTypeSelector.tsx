@@ -29,7 +29,7 @@ export function TeraTypeSelector({ currentType, onSelect }: TeraTypeSelectorProp
     <div ref={containerRef} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-1 rounded-md border border-input bg-background px-2 py-1.5 text-xs hover:bg-secondary/50 transition-colors"
+        className="w-full flex items-center justify-between gap-1 rounded-xl border border-white/[0.08] bg-surface-bright px-2 py-1.5 text-xs hover:bg-white/[0.05] transition-colors"
       >
         {currentType ? (
           <span className="flex items-center gap-1.5">
@@ -46,7 +46,7 @@ export function TeraTypeSelector({ currentType, onSelect }: TeraTypeSelectorProp
       </button>
 
       {open && (
-        <div className="absolute z-40 top-full left-0 right-0 mt-1 rounded-md border border-border bg-card shadow-lg max-h-52 overflow-y-auto">
+        <div className="absolute z-40 top-full left-0 right-0 mt-1 rounded-xl ghost-border bg-card shadow-2xl max-h-52 overflow-y-auto">
           <div className="p-1">
             {currentType && (
               <button
@@ -54,7 +54,7 @@ export function TeraTypeSelector({ currentType, onSelect }: TeraTypeSelectorProp
                   onSelect(null);
                   setOpen(false);
                 }}
-                className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs text-muted-foreground hover:bg-secondary transition-colors"
+                className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-white/[0.05] transition-colors"
               >
                 <X className="h-3 w-3" />
                 Clear
@@ -67,8 +67,8 @@ export function TeraTypeSelector({ currentType, onSelect }: TeraTypeSelectorProp
                   onSelect(t);
                   setOpen(false);
                 }}
-                className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs hover:bg-secondary transition-colors capitalize ${
-                  currentType === t ? 'bg-secondary' : ''
+                className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs hover:bg-white/[0.05] transition-colors capitalize ${
+                  currentType === t ? 'bg-white/[0.05]' : ''
                 }`}
               >
                 <span
