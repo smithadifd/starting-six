@@ -122,7 +122,7 @@ export const teamMembers = sqliteTable('team_members', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   playthroughId: integer('playthrough_id').references(() => playthroughs.id, { onDelete: 'cascade' }).notNull(),
   pokemonId: integer('pokemon_id').references(() => pokemon.id).notNull(),
-  slot: integer('slot').notNull(), // 1-6
+  slot: integer('slot'), // 1-6 for active team, null for bench
   nickname: text('nickname'),
   abilityId: integer('ability_id').references(() => abilities.id),
   teraType: text('tera_type'), // User-specified Gen 9 mechanic, one of 18 type strings

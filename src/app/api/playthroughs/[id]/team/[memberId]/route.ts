@@ -1,7 +1,7 @@
 import { requireUserIdFromRequest } from '@/lib/auth-helpers';
 import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiValidationError } from '@/lib/utils/api';
-import { updateTeamMemberSchema, formatZodError } from '@/lib/validations';
-import { getPlaythrough, updateTeamMember, removeTeamMember, getTeamMembers } from '@/lib/db/queries';
+import { updateTeamMemberSchema, benchTeamMemberSchema, activateTeamMemberSchema, formatZodError } from '@/lib/validations';
+import { getPlaythrough, updateTeamMember, removeTeamMember, getTeamMembers, benchTeamMember, activateTeamMember, getNextTeamSlot } from '@/lib/db/queries';
 
 export async function PATCH(
   request: Request,
@@ -26,6 +26,41 @@ export async function PATCH(
     body = await request.json();
   } catch {
     return apiValidationError('Invalid JSON body');
+  }
+
+  // Check if this is a bench/activate action
+  const benchParsed = benchTeamMemberSchema.safeParse(body);
+  if (benchParsed.success) {
+    try {
+      const run = getPlaythrough(playthroughId, userId);
+      if (!run) return apiNotFound('Playthrough');
+      const team = getTeamMembers(playthroughId);
+      const member = team.find((m) => m.id === teamMemberId);
+      if (!member) return apiNotFound('Team member');
+      benchTeamMember(teamMemberId, playthroughId);
+      return apiSuccess({ benched: true });
+    } catch (err) {
+      console.error('Failed to bench team member:', err);
+      return apiError('Failed to bench team member');
+    }
+  }
+
+  const activateParsed = activateTeamMemberSchema.safeParse(body);
+  if (activateParsed.success) {
+    try {
+      const run = getPlaythrough(playthroughId, userId);
+      if (!run) return apiNotFound('Playthrough');
+      const team = getTeamMembers(playthroughId);
+      const member = team.find((m) => m.id === teamMemberId);
+      if (!member) return apiNotFound('Team member');
+      const slot = activateParsed.data.slot ?? getNextTeamSlot(playthroughId);
+      if (slot === null) return apiValidationError('No available active slots');
+      activateTeamMember(teamMemberId, playthroughId, slot);
+      return apiSuccess({ activated: true, slot });
+    } catch (err) {
+      console.error('Failed to activate team member:', err);
+      return apiError('Failed to activate team member');
+    }
   }
 
   const parsed = updateTeamMemberSchema.safeParse(body);

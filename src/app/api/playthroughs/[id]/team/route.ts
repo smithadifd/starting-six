@@ -71,11 +71,8 @@ export async function POST(
     const poke = getPokemonById(parsed.data.pokemonId);
     if (!poke) return apiValidationError('Pokemon not found');
 
-    // Find next available slot
+    // Find next available active slot, or bench if full
     const slot = getNextTeamSlot(playthroughId);
-    if (slot === null) {
-      return apiValidationError('Team is full (max 6 members)');
-    }
 
     const member = addTeamMember({
       playthroughId,
@@ -86,7 +83,7 @@ export async function POST(
       teraType: parsed.data.teraType,
     });
 
-    return apiSuccess(member);
+    return apiSuccess({ ...member, benched: slot === null });
   } catch (err) {
     console.error('Failed to add team member:', err);
     return apiError('Failed to add team member');

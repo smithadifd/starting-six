@@ -8,6 +8,13 @@
       "when": 1772573643817,
       "tag": "0000_tiny_whiplash",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1774623627239,
+      "tag": "0001_brief_starfox",
+      "breakpoints": true
     }
   ]
 }

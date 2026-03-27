@@ -54,6 +54,20 @@ export const addTeamMemberSchema = z.object({
   teraType: z.enum(POKEMON_TYPE_VALUES).optional(),
 });
 
+export const swapTeamMemberSchema = z.object({
+  benchMemberId: z.number().int().min(1),
+  activeSlot: z.number().int().min(1).max(6),
+});
+
+export const benchTeamMemberSchema = z.object({
+  action: z.literal('bench'),
+});
+
+export const activateTeamMemberSchema = z.object({
+  action: z.literal('activate'),
+  slot: z.number().int().min(1).max(6).optional(),
+});
+
 export const updateTeamMemberSchema = z.object({
   nickname: z.string().max(50).nullable().optional(),
   abilityId: z.number().int().min(1).nullable().optional(),
