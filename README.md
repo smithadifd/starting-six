@@ -4,6 +4,12 @@ Plan your Pokemon playthrough team before you start the game.
 
 <!-- TODO: Add 2-3 screenshots (team builder, analysis panel, Pokemon browser) -->
 
+## Live Demo
+
+**[Try it live at starting-six.smithadifd.com](https://starting-six.smithadifd.com)**
+
+Log in with `demo@example.com` / `demo1234!`. Data resets weekly and mutations (sync, settings changes, registration) are disabled.
+
 ## Why This Exists
 
 Every Pokemon game starts the same way: you pick a starter, catch what looks cool, and end up with a team that has three Water types and nothing for the Elite Four. Starting Six lets you plan your full team in advance — see type coverage gaps, check move pools, and make sure your squad actually works together before you commit 40 hours to a playthrough.
