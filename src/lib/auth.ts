@@ -3,10 +3,10 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { nextCookies } from 'better-auth/next-js';
 import { getDb } from './db';
 
-type Auth = ReturnType<typeof betterAuth>;
+type Auth = ReturnType<typeof createAuth>;
 let _auth: Auth | null = null;
 
-function createAuth(): Auth {
+function createAuth() {
   return betterAuth({
     baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
     secret: process.env.BETTER_AUTH_SECRET,
