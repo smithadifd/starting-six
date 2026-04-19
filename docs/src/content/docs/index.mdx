@@ -1,0 +1,36 @@
+---
+title: Starting Six
+description: Plan your Pokemon playthrough team before you start the game.
+template: splash
+hero:
+  tagline: Plan your Pokemon playthrough team before you start the game.
+  actions:
+    - text: Read the intro
+      link: /starting-six/introduction/what-is-starting-six/
+      icon: right-arrow
+      variant: primary
+    - text: Quick start
+      link: /starting-six/getting-started/quick-start/
+      icon: external
+    - text: View on GitHub
+      link: https://github.com/smithadifd/starting-six
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="What it does" icon="information">
+    Pick up to six Pokemon per run, assign moves, abilities, and Tera types, and get live type coverage analysis.
+  </Card>
+  <Card title="Self-hostable" icon="seti:docker">
+    Single Docker command. Data lives in a local SQLite file.
+  </Card>
+  <Card title="Offline-first" icon="seti:db">
+    PokeAPI data syncs once to a local database. The UI never hits PokeAPI during normal use.
+  </Card>
+  <Card title="Open source" icon="github">
+    MIT-licensed. See the repo for source and deployment details.
+  </Card>
+</CardGrid>
