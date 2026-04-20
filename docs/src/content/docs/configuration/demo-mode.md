@@ -3,7 +3,7 @@ title: Demo mode
 description: What DEMO_MODE=true does, what it blocks, how the public demo is seeded, and how to run one yourself.
 ---
 
-The public demo lives at [https://starting-six.smithadifd.com](https://starting-six.smithadifd.com). It runs the same Docker image as a self-hosted deployment with two environment variables added: `DEMO_MODE=true` on the server and `NEXT_PUBLIC_DEMO_MODE=true` baked into the client bundle at build time.
+The public demo lives at [https://starting-six.smithadifd.com](https://starting-six.smithadifd.com). It runs the same Docker image as a self-hosted deployment with one environment variable added: `DEMO_MODE=true` on the server.
 
 ## Demo credentials
 
@@ -22,7 +22,6 @@ These are defined as constants in `src/lib/demo.ts` (`DEMO_USER.email` and `DEMO
 | --- | --- |
 | `POST` | `/api/sync` |
 | `PUT` | `/api/settings` |
-| `PATCH` | `/api/settings` |
 | `POST` | `/api/setup` |
 
 This covers the two mutations that would change shared state: triggering a PokéAPI sync and modifying settings. The `/api/setup` block prevents anyone from creating a new user account via the setup route, which is the only registration path the app exposes.
@@ -53,8 +52,8 @@ Passwords are hashed using the same `scrypt` parameters as Better Auth (N=16384,
 
 ## Running your own demo
 
-1. Set `DEMO_MODE=true` in your server environment and `NEXT_PUBLIC_DEMO_MODE=true` as a build arg (client variables are inlined at build time, not runtime).
-2. Use `docker-compose.demo.yml` as a reference. It sets both variables, exposes the app on port `3012`, and uses a named volume (`starting_six_demo_data`) for the database.
+1. Set `DEMO_MODE=true` in your server environment.
+2. Use `docker-compose.demo.yml` as a reference. It sets the variable, exposes the app on port `3012`, and uses a named volume (`starting_six_demo_data`) for the database.
 3. Run a full PokéAPI sync once to populate Pokémon data, then run `node scripts/seed-demo.mjs` to create the demo user and sample playthroughs. The seed script reads `DATABASE_URL` from the environment; the default is `./data/starting-six.db`.
 4. With `DEMO_MODE=true` active, mutation endpoints are blocked immediately on the next request — no restart required beyond the initial build.
 

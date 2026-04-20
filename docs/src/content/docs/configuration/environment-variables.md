@@ -19,17 +19,15 @@ Environment variables are loaded from `.env.local` in development and passed in 
 |`APP_URL`|`http://localhost:3000`|Base URL of the app. In `docker-compose.prod.yml` this is used to populate `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` at build time, falling back to `https://starting-six.home`.|
 |`BETTER_AUTH_URL`|`http://localhost:3000`|URL Better Auth uses to build callback and cookie origins.|
 |`DEMO_MODE`|unset|Set to `true` to enable demo mode on the server (blocks mutations, disables sync, shortens sessions).|
-|`NEXT_PUBLIC_DEMO_MODE`|unset|Set to `true` to enable demo-mode UI on the client (shows demo credentials on the login page).|
 
 ## Public (client-side) variables
 
 `NEXT_PUBLIC_*` variables are inlined into the client bundle at build time, not read at runtime. In the production Docker image they must be passed as build args, not just runtime environment — `docker-compose.prod.yml` does this via the `NEXT_PUBLIC_APP_URL` build arg.
 
 - `NEXT_PUBLIC_APP_URL` — absolute URL of the app, used by client code that needs an origin.
-- `NEXT_PUBLIC_DEMO_MODE` — toggles demo-only UI affordances.
 
-Changing either of these requires a rebuild, not just a container restart.
+Changing this requires a rebuild, not just a container restart.
 
 ## Demo mode
 
-Setting `DEMO_MODE=true` (server) and `NEXT_PUBLIC_DEMO_MODE=true` (client) turns the deployment into a public demo: mutation endpoints return 403, PokéAPI sync is blocked, registration is disabled, and session expiry drops to 24 hours. The login page does not display the demo credentials — they live in the repo's README and these docs instead, so the demo stays pointed at visitors who find the project through GitHub or the docs site. See [Demo Mode](/starting-six/configuration/demo-mode/) for the full behavior.
+Setting `DEMO_MODE=true` on the server turns the deployment into a public demo: mutation endpoints return 403, PokéAPI sync is blocked, registration is disabled, and session expiry drops to 24 hours. The login page does not display the demo credentials — they live in the repo's README and these docs instead, so the demo stays pointed at visitors who find the project through GitHub or the docs site. See [Demo Mode](/starting-six/configuration/demo-mode/) for the full behavior.

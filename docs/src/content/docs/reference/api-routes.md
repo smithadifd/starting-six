@@ -14,7 +14,6 @@ All API routes live under `/api` and are implemented as Next.js App Router route
 | POST | `/api/setup` | Create the first user account (blocked if any user exists) | Setup-guarded | Yes |
 | GET | `/api/settings` | Read all settings key/value pairs | Required | No |
 | PUT | `/api/settings` | Write a single setting key (currently `current_game`) | Required | Yes |
-| PATCH | `/api/settings` | Write a single setting key | Required | Yes |
 | POST | `/api/sync` | Trigger a full PokéAPI sync; streams progress as SSE | Required | Yes |
 | GET | `/api/pokemon` | List Pokémon with filtering and pagination | Required | No |
 | GET | `/api/pokemon/[id]/moves` | Moves (and optionally abilities) for a single Pokémon | Required | No |
@@ -100,7 +99,7 @@ Returns 400 if the team has no active members. Only active members (not benched)
 
 ## Demo mode
 
-Four routes are blocked when `DEMO_MODE=true`: `POST /api/sync`, `PUT /api/settings`, `PATCH /api/settings`, and `POST /api/setup`. Blocked requests receive 403 with `{ error: "This action is disabled in demo mode." }`. The full list is maintained in `src/proxy.ts`. See [Demo mode](/starting-six/configuration/demo-mode/) for how to configure this.
+Three routes are blocked when `DEMO_MODE=true`: `POST /api/sync`, `PUT /api/settings`, and `POST /api/setup`. Blocked requests receive 403 with `{ error: "This action is disabled in demo mode." }`. The full list is maintained in `src/proxy.ts`. See [Demo mode](/starting-six/configuration/demo-mode/) for how to configure this.
 
 ## Auth environment variables
 
