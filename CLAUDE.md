@@ -273,7 +273,7 @@ Files:
 
 When building new features:
 - New mutation endpoints must check demo mode in `proxy.ts` and block if true
-- `NEXT_PUBLIC_DEMO_MODE` controls client-side demo UI (login page credentials)
+- Demo credentials are intentionally hidden from the login page (README/docs only)
 
 ---
 
@@ -285,7 +285,6 @@ When building new features:
 | `BETTER_AUTH_SECRET` | Yes | Session encryption key |
 | `NEXT_PUBLIC_APP_URL` | Yes (prod) | App URL (inlined at build time) |
 | `DEMO_MODE` | No | Set to `true` for demo mode (server-side) |
-| `NEXT_PUBLIC_DEMO_MODE` | No | Set to `true` for demo mode (client-side) |
 
 ---
 

@@ -7,7 +7,6 @@ const DEMO_MODE = process.env.DEMO_MODE === 'true';
 const DEMO_BLOCKED: { method: string; prefix: string }[] = [
   { method: 'POST', prefix: '/api/sync' },
   { method: 'PUT', prefix: '/api/settings' },
-  { method: 'PATCH', prefix: '/api/settings' },
   { method: 'POST', prefix: '/api/setup' },
 ];
 

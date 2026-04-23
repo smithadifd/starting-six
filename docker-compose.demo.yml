@@ -18,7 +18,6 @@ services:
       - BETTER_AUTH_URL=https://starting-six.smithadifd.com
       - NEXT_PUBLIC_APP_URL=https://starting-six.smithadifd.com
       - DEMO_MODE=true
-      - NEXT_PUBLIC_DEMO_MODE=true
     volumes:
       - starting_six_demo_data:/app/data
     ports:
