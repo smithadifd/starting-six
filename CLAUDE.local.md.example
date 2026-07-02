@@ -1,0 +1,13 @@
+# Starting Six — Local Configuration (DO NOT COMMIT)
+
+Per-machine deployment details. This file is gitignored; copy it to `CLAUDE.local.md` and fill in
+your own values. Store secrets in `.env.local` / `.env.production`, never here.
+
+## Deployment Target
+<e.g. Synology NAS via Docker Compose behind Caddy at https://starting-six.home → port 3002>
+
+## API Keys
+- None — PokéAPI is public, no auth required.
+
+## Deploy Host Notes
+- <Docker host + path, container/host port mapping, reverse-proxy hostname → port>

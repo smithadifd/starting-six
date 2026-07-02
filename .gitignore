@@ -26,6 +26,9 @@ data/*
 CLAUDE.local.md
 plans/
 
+# Claude Code local overrides (machine-specific; may hold paths/secrets — never commit)
+.claude/settings.local.json
+
 # PWA service worker (generated)
 public/sw.js
 public/sw.js.map
