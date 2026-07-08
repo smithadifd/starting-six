@@ -4,7 +4,7 @@ Thanks for your interest in Starting Six — a self-hosted Pokémon playthrough 
 analysis tool. This is a small, single-maintainer project, but contributions and bug reports are
 welcome.
 
-## ⚠️ Read this first: `main` auto-deploys to the public demo
+## Read this first: `main` auto-deploys to the public demo
 
 The public demo at <https://starting-six.smithadifd.com> tracks `main`. An EC2 cron polls `main`
 every ~5 minutes and automatically rebuilds and redeploys, so **anything merged to `main` ships to
@@ -74,7 +74,8 @@ docker compose up -d         # dev, port 3000
 ## A few things that will save you time
 
 - **Adding a mutation API endpoint?** Block it in `src/proxy.ts`'s demo-mode gate, or it leaks into
-  the public demo. (`middleware.ts` only re-exports `proxy.ts` — edit `proxy.ts`.)
+  the public demo. (Next.js 16 uses `proxy.ts` directly as the middleware entrypoint — there's no
+  separate `middleware.ts` file to edit.)
 - **Changing type effectiveness?** The type chart is a hardcoded Gen 9 18×18 matrix in
   `src/lib/analysis/typeChart.ts`. The bulk sync does **not** touch it — it's a manual edit.
 - **Schema change?** Edit `src/lib/db/schema.ts` (the single source of truth). `ensureSchema()` in

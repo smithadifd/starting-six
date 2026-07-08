@@ -118,8 +118,8 @@ Contributions and bug reports are welcome. See **[CONTRIBUTING.md](CONTRIBUTING.
 
 Starting Six is free and self-hostable. If it's useful to you and you'd like to say thanks:
 
-- ❤️ [GitHub Sponsors](https://github.com/sponsors/smithadifd)
-- ☕ [Ko-fi](https://ko-fi.com/smithadifd)
+- [GitHub Sponsors](https://github.com/sponsors/smithadifd)
+- [Ko-fi](https://ko-fi.com/smithadifd)
 
 ## License
 
