@@ -1,14 +1,31 @@
 # Starting Six
 
+[![CI](https://github.com/smithadifd/starting-six/actions/workflows/ci.yml/badge.svg)](https://github.com/smithadifd/starting-six/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Plan your Pokemon playthrough team before you start the game.
 
-<!-- TODO: Add 2-3 screenshots (team builder, analysis panel, Pokemon browser) -->
+### Team Builder
+
+![Team builder — a full six-Pokemon playthrough team with moves, abilities, and Tera types](docs/screenshots/team-builder.png)
+
+### Type-Coverage Analysis
+
+![Analysis panel — defensive and offensive type coverage with shared weaknesses and role balance](docs/screenshots/analysis-panel.png)
+
+### Pokemon Browser
+
+![Pokemon browser — a virtualized grid of every Pokemon, filterable by type and generation](docs/screenshots/pokemon-browser.png)
 
 ## Live Demo
 
 **[Try it live at starting-six.smithadifd.com](https://starting-six.smithadifd.com)**
 
 Log in with `demo@example.com` / `demo1234!`. Data resets weekly and mutations (sync, settings changes, registration) are disabled.
+
+> The demo tracks `main`: it rebuilds and redeploys automatically within ~5 minutes of every merge, and its data volume is wiped and reseeded every Sunday at 4am UTC — so don't rely on anything you create there sticking around.
+>
+> Type matchups use the **Gen 9** type chart (18×18). If you're planning an older-generation playthrough, a few matchups will differ from what your game actually uses (e.g. pre-Gen-6 Steel resistances, pre-Gen-2 type interactions).
 
 ## Why This Exists
 
@@ -85,11 +102,24 @@ npm run dev
 
 ## Testing
 
+The suite covers **138 tests across 10 suites** — mostly the pure analysis engine (type coverage, roles, abilities) plus validations and demo-mode gating. CI runs lint, tests, and a production build on every push and PR.
+
 ```bash
 npm test              # Run all 138 tests
 npm run test:watch    # Watch mode
 npm run test:coverage # With coverage report
 ```
+
+## Contributing
+
+Contributions and bug reports are welcome. See **[CONTRIBUTING.md](CONTRIBUTING.md)** for setup, conventions, testing, and the CI gates — and note the auto-deploy-on-`main` behavior described there before you open a PR.
+
+## Support This Project
+
+Starting Six is free and self-hostable. If it's useful to you and you'd like to say thanks:
+
+- [GitHub Sponsors](https://github.com/sponsors/smithadifd)
+- [Ko-fi](https://ko-fi.com/smithadifd)
 
 ## License
 
