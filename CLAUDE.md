@@ -19,13 +19,5 @@ self-contained; read it first. Personal/secret config lives in the gitignored `C
 - Run `/review` (or the `code-reviewer` agent) on the diff before declaring work done; apply
   mechanical fixes silently, surface real questions.
 - Conventional commits; never auto-push; confirm before destructive ops. No emojis unless asked.
-
-## End-of-session workflow
-
-1. **Branch** off `main` (`feat/…`, `fix/…`) — public repo, no direct pushes.
-2. **Commit** staged files with a Conventional Commit message.
-3. **Push** `git push -u origin <branch>`, then `gh pr create` (summary + test plan).
-4. **CI** `gh run watch <run-id> --exit-status`.
-5. **Merge** `gh pr merge <n> --squash --delete-branch`; then `git checkout main && git pull`.
-6. **Deploy** — merging to `main` auto-deploys to the demo; the Synology deploy is `./scripts/deploy.sh`.
-7. **Docs** update `MEMORY.md` and this file if status changed.
+- End-of-session ship steps (Synology deploy script; note merge→`main` auto-deploys the EC2
+  demo) are deploy-specific and live in the gitignored `CLAUDE.local.md`, not this committed shim.
