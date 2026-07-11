@@ -11,3 +11,10 @@ your own values. Store secrets in `.env.local` / `.env.production`, never here.
 
 ## Deploy Host Notes
 - <Docker host + path, container/host port mapping, reverse-proxy hostname → port>
+
+## End-of-session workflow
+The generic branch → PR → CI-green → squash-merge sequence is your global
+`~/.claude/CLAUDE.md` checklist; keep only Starting Six's deltas here, e.g.:
+- Merging to `main` auto-deploys the public EC2 demo (~5 min) — keep unrelated changes out.
+- Synology deploy (when self-hosting): `./scripts/deploy.sh` (the `deploy` skill drives it).
+- No migration step — `ensureSchema()` creates tables on boot.
