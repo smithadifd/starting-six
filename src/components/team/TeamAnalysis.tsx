@@ -45,46 +45,133 @@ interface AnalysisData {
   teamSize: number;
 }
 
-interface TeamAnalysisProps {
-  playthroughId: number;
-  teamSize: number;
-  /** Increment to trigger re-fetch (e.g. on swap, bench, activate) */
-  teamRevision?: number;
+/**
+ * The subset of a team member's data that affects the computed analysis
+ * (see src/app/api/playthroughs/[id]/analysis/route.ts): which Pokémon, which
+ * ability, and which moves are equipped. Nickname, Tera type, and slot/bench
+ * position are NOT analysis inputs, so they're deliberately excluded here —
+ * editing them shouldn't invalidate the cache or trigger a re-run.
+ */
+export interface TeamAnalysisMember {
+  pokemonId: number;
+  abilityId: number | null;
+  moveIds: number[];
 }
 
-export function TeamAnalysis({ playthroughId, teamSize, teamRevision = 0 }: TeamAnalysisProps) {
+interface TeamAnalysisProps {
+  playthroughId: number;
+  teamMembers: TeamAnalysisMember[];
+}
+
+/**
+ * Deterministic, order-independent hash of the analysis-relevant team fields.
+ * Members are canonicalized then sorted before hashing so that reordering
+ * active slots (with the same members) — or any other change that doesn't
+ * touch pokemonId/abilityId/moveIds — produces the same key, while an add,
+ * remove, swap, or ability/move edit always changes it.
+ */
+function hashTeamComposition(members: TeamAnalysisMember[]): string {
+  const canonical = members
+    .map((m) => `${m.pokemonId}:${m.abilityId ?? '-'}:${[...m.moveIds].sort((a, b) => a - b).join('.')}`)
+    .sort()
+    .join('|');
+
+  // djb2 — cheap, deterministic, good-enough distribution for a cache key
+  // (not a security hash).
+  let hash = 5381;
+  for (let i = 0; i < canonical.length; i++) {
+    hash = (hash * 33) ^ canonical.charCodeAt(i);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+/**
+ * Client-side analysis cache, keyed on playthroughId + composition hash.
+ * Module-level (not component state) so it survives unmount/remount as the
+ * user navigates away from and back to a playthrough within the same session.
+ * There's no eviction: a single-user app visits at most a handful of distinct
+ * playthrough/composition combos per session, so unbounded growth here is a
+ * non-issue in practice.
+ */
+const analysisCache = new Map<string, AnalysisData>();
+
+function cacheKeyFor(playthroughId: number, members: TeamAnalysisMember[]): string {
+  return `${playthroughId}:${hashTeamComposition(members)}`;
+}
+
+export function TeamAnalysis({ playthroughId, teamMembers }: TeamAnalysisProps) {
   const [data, setData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
-  const prevRevision = useRef(teamRevision);
 
-  // Re-fetch when team composition changes if analysis was already loaded
-  useEffect(() => {
-    if (prevRevision.current !== teamRevision && data) {
-      fetchAnalysis();
+  const teamSize = teamMembers.length;
+  const cacheKey = teamSize > 0 ? cacheKeyFor(playthroughId, teamMembers) : null;
+
+  // Monotonic id stamped on each fetch; only the most recent request may
+  // commit its result. The analysis endpoint reads CURRENT DB state (it isn't
+  // parameterized by composition), so a completed-but-superseded response can
+  // carry the wrong composition's data. Key identity is NOT enough to detect
+  // this: an A -> B -> A ("ABA") change makes the first (still-in-flight) A
+  // request's key match the current key again when it finally lands, so a
+  // key-guard would wrongly accept it. Discriminating by request INSTANCE
+  // closes that hole — a superseded request never matches the latest id.
+  const requestIdRef = useRef(0);
+
+  const runAnalysis = useCallback(async (key: string) => {
+    const cached = analysisCache.get(key);
+    if (cached) {
+      // Cache hit: resolve instantly, no flash to the loading state. Bump the
+      // request id so any in-flight fetch is treated as superseded.
+      requestIdRef.current += 1;
+      setData(cached);
+      setError(null);
+      setLoading(false);
+      setExpanded(true);
+      return;
     }
-    prevRevision.current = teamRevision;
-  });
 
-  const fetchAnalysis = useCallback(async () => {
+    const requestId = (requestIdRef.current += 1);
+
+    // Fresh fetch for an uncached composition: drop the previous team's
+    // analysis so stale data can't linger behind the loading state (or beside
+    // an error if this fetch fails).
+    setData(null);
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(`/api/playthroughs/${playthroughId}/analysis`);
       const json = await res.json();
+      // A newer request has since started — this response is superseded and may
+      // carry another composition's data. Drop it: don't cache, don't display.
+      if (requestId !== requestIdRef.current) return;
       if (!res.ok) {
         setError(json.error || 'Failed to load analysis');
         return;
       }
+      analysisCache.set(key, json.data);
       setData(json.data);
       setExpanded(true);
     } catch {
+      if (requestId !== requestIdRef.current) return;
       setError('Failed to load analysis');
     } finally {
-      setLoading(false);
+      // Only the latest request owns the loading flag; a superseded request
+      // resolving must not clear the spinner of the one that replaced it.
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, [playthroughId]);
+
+  // Auto-run whenever the team has >= 1 member. `cacheKey` is a primitive
+  // string derived from the team's analysis-relevant content (not the
+  // `teamMembers` array's object identity), so this effect only re-fires when
+  // the composition actually changes value — a parent re-render that passes a
+  // new array reference with the same content is a no-op here, and a cache
+  // hit inside runAnalysis resolves synchronously with no fetch.
+  useEffect(() => {
+    if (!cacheKey) return;
+    runAnalysis(cacheKey);
+  }, [cacheKey, runAnalysis]);
 
   if (teamSize === 0) return null;
 
@@ -92,7 +179,7 @@ export function TeamAnalysis({ playthroughId, teamSize, teamRevision = 0 }: Team
     <div className="rounded-xl ghost-border bg-card">
       <button
         onClick={() => {
-          if (!data && !loading) fetchAnalysis();
+          if (!data && !loading && cacheKey) runAnalysis(cacheKey);
           else setExpanded(!expanded);
         }}
         className="w-full flex items-center justify-between p-5 hover:bg-white/[0.02] transition-colors rounded-xl"

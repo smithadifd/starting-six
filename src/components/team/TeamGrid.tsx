@@ -47,7 +47,6 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
   const [allMembers, setAllMembers] = useState<TeamMember[]>(initialTeam);
   const [searchOpen, setSearchOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [teamRevision, setTeamRevision] = useState(0);
 
   const activeMembers = allMembers.filter((m) => m.slot !== null).sort((a, b) => a.slot! - b.slot!);
   const benchMembers = allMembers.filter((m) => m.slot === null);
@@ -58,7 +57,6 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
       if (!res.ok) return;
       const json = await res.json();
       setAllMembers(json.data);
-      setTeamRevision((r) => r + 1);
     } catch {
       // Silently fail — user can refresh
     }
@@ -177,7 +175,14 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
 
       {/* Analysis Section */}
       <div className="mt-8">
-        <TeamAnalysis playthroughId={playthroughId} teamSize={activeMembers.length} teamRevision={teamRevision} />
+        <TeamAnalysis
+          playthroughId={playthroughId}
+          teamMembers={activeMembers.map((m) => ({
+            pokemonId: m.pokemon.id,
+            abilityId: m.ability?.id ?? null,
+            moveIds: m.moves.map((mv) => mv.move.id),
+          }))}
+        />
       </div>
     </>
   );
