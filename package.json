@@ -40,6 +40,8 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
     "@serwist/turbopack": "^9.5.11",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^25.9.1",
     "@types/react": "^19.2.16",
@@ -50,6 +52,7 @@
     "esbuild": "^0.28.0",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.7",
+    "jsdom": "^29.1.1",
     "postcss": "^8.5.15",
     "serwist": "^9.5.7",
     "sharp": "^0.34.5",
