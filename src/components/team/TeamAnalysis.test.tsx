@@ -7,7 +7,9 @@ import { POKEMON_TYPES } from '@/types';
 
 // Minimal-but-valid AnalysisData shape so the section components (which index
 // into `byType`/`coverage` for every Pokemon type) don't throw on render.
-function fakeAnalysisData(teamSize: number) {
+// `coveragePercent` is surfaced in the UI as "<n>%", so passing a distinct
+// value lets a test tell one team's rendered analysis apart from another's.
+function fakeAnalysisData(teamSize: number, coveragePercent = 0) {
   const byType = Object.fromEntries(
     POKEMON_TYPES.map((t) => [t, { weak: 0, resist: 0, immune: 0 }]),
   );
@@ -16,7 +18,7 @@ function fakeAnalysisData(teamSize: number) {
   );
   return {
     defense: { byType, sharedWeaknesses: [], uncoveredTypes: [] },
-    offense: { coverage, uncoveredTypes: [], coveragePercent: 0 },
+    offense: { coverage, uncoveredTypes: [], coveragePercent },
     roles: [],
     abilities: [],
     teamSize,
@@ -28,6 +30,17 @@ function mockFetchOk(teamSize: number) {
     ok: true,
     json: async () => ({ data: fakeAnalysisData(teamSize) }),
   });
+}
+
+// A manually-controllable promise, for driving out-of-order fetch resolution.
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
 }
 
 const memberA: TeamAnalysisMember = { pokemonId: 1, abilityId: 10, moveIds: [100, 101] };
@@ -162,5 +175,86 @@ describe('TeamAnalysis — auto-run + client cache', () => {
 
     await waitFor(() => expect(screen.getByText('Boom')).toBeInTheDocument());
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  // --- Regression: async correctness in the auto-run path (codex second pass) ---
+
+  it('race: a stale in-flight response is not cached under the superseded key (K resolves last with K2 data)', async () => {
+    // Two in-flight requests, resolved out of order. The endpoint reads CURRENT
+    // DB state, so once composition is K2 BOTH requests return K2's payload.
+    const calls: Array<ReturnType<typeof deferred<{ ok: boolean; json: () => Promise<unknown> }>>> = [];
+    const fetchMock = vi.fn().mockImplementation(() => {
+      const d = deferred<{ ok: boolean; json: () => Promise<unknown> }>();
+      calls.push(d);
+      return d.promise;
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const k2Payload = { ok: true, json: async () => ({ data: fakeAnalysisData(2, 0.99) }) };
+
+    // Mount K — fetch #1 starts (in flight).
+    const { rerender } = render(<TeamAnalysis playthroughId={200} teamMembers={[memberA]} />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    // Composition changes to K2 while K is still in flight — fetch #2 starts.
+    rerender(<TeamAnalysis playthroughId={200} teamMembers={[memberA, memberB]} />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    // K2 (fetch #2) resolves FIRST, then K (fetch #1) resolves LAST — both with
+    // K2's data, because the DB now reflects K2.
+    calls[1].resolve(k2Payload);
+    await waitFor(() => expect(screen.getByText('99%')).toBeInTheDocument());
+    calls[0].resolve({ ok: true, json: async () => ({ data: fakeAnalysisData(2, 0.99) }) });
+
+    // Give the stale (K) response a chance to (wrongly) write the cache.
+    await new Promise((r) => setTimeout(r, 0));
+
+    // Now navigate back to K. With the guard, K was never cached, so this MUST
+    // trigger a fresh fetch (#3). WITHOUT the guard, K's slot holds K2's data,
+    // this is a cache HIT, and no third fetch fires — so the assertion fails.
+    rerender(<TeamAnalysis playthroughId={200} teamMembers={[memberA]} />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+  });
+
+  it('display: switching to an uncached composition clears prior analysis and shows loading', async () => {
+    const kPayload = { ok: true, json: async () => ({ data: fakeAnalysisData(1, 0.11) }) };
+    const k2 = deferred<{ ok: boolean; json: () => Promise<unknown> }>();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(kPayload) // K resolves immediately
+      .mockImplementationOnce(() => k2.promise); // K2 stays in flight
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { rerender } = render(<TeamAnalysis playthroughId={201} teamMembers={[memberA]} />);
+    await waitFor(() => expect(screen.getByText('11%')).toBeInTheDocument());
+
+    // Switch to an uncached composition; its fetch is still pending.
+    rerender(<TeamAnalysis playthroughId={201} teamMembers={[memberA, memberB]} />);
+
+    // Prior analysis must be gone (not lingering behind the spinner), and the
+    // loading affordance shown instead.
+    await waitFor(() => expect(screen.getByText('Loading...')).toBeInTheDocument());
+    expect(screen.queryByText('11%')).not.toBeInTheDocument();
+    expect(screen.queryByText('Defensive Coverage')).not.toBeInTheDocument();
+  });
+
+  it('display: a failed new fetch shows the error without leaving stale analysis beside it', async () => {
+    const kPayload = { ok: true, json: async () => ({ data: fakeAnalysisData(1, 0.22) }) };
+    const k2Fail = { ok: false, json: async () => ({ error: 'Kaboom' }) };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(kPayload)
+      .mockResolvedValueOnce(k2Fail);
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { rerender } = render(<TeamAnalysis playthroughId={202} teamMembers={[memberA]} />);
+    await waitFor(() => expect(screen.getByText('22%')).toBeInTheDocument());
+
+    rerender(<TeamAnalysis playthroughId={202} teamMembers={[memberA, memberB]} />);
+
+    await waitFor(() => expect(screen.getByText('Kaboom')).toBeInTheDocument());
+    // Stale analysis from K must NOT remain on screen next to the error.
+    expect(screen.queryByText('22%')).not.toBeInTheDocument();
+    expect(screen.queryByText('Defensive Coverage')).not.toBeInTheDocument();
   });
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { BarChart3, Shield, Swords, Users, Sparkles, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { TYPE_COLORS } from '../../../tailwind.config';
 import type { PokemonType } from '@/types';
@@ -108,19 +108,39 @@ export function TeamAnalysis({ playthroughId, teamMembers }: TeamAnalysisProps) 
   const teamSize = teamMembers.length;
   const cacheKey = teamSize > 0 ? cacheKeyFor(playthroughId, teamMembers) : null;
 
+  // The most recently requested cache key. The analysis endpoint reads CURRENT
+  // DB state (it isn't parameterized by composition), so if the team changes
+  // K -> K2 while K's request is still in flight, K's response actually
+  // contains K2's data. We capture the key at fetch start and, on resolve,
+  // drop any response whose key is no longer the latest — so a stale response
+  // is never displayed nor cached under the wrong key.
+  const latestKeyRef = useRef<string | null>(null);
+
   const runAnalysis = useCallback(async (key: string) => {
+    latestKeyRef.current = key;
+
     const cached = analysisCache.get(key);
     if (cached) {
+      // Cache hit: resolve instantly, no flash to the loading state.
       setData(cached);
       setError(null);
+      setLoading(false);
       setExpanded(true);
       return;
     }
+
+    // Fresh fetch for an uncached composition: drop the previous team's
+    // analysis so stale data can't linger behind the loading state (or beside
+    // an error if this fetch fails).
+    setData(null);
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(`/api/playthroughs/${playthroughId}/analysis`);
       const json = await res.json();
+      // Composition changed mid-flight — this response belongs to a superseded
+      // key. Drop it: don't cache (would mislabel), don't display.
+      if (latestKeyRef.current !== key) return;
       if (!res.ok) {
         setError(json.error || 'Failed to load analysis');
         return;
@@ -129,9 +149,12 @@ export function TeamAnalysis({ playthroughId, teamMembers }: TeamAnalysisProps) 
       setData(json.data);
       setExpanded(true);
     } catch {
+      if (latestKeyRef.current !== key) return;
       setError('Failed to load analysis');
     } finally {
-      setLoading(false);
+      // Only the latest request owns the loading flag; a superseded request
+      // resolving must not clear the spinner of the one that replaced it.
+      if (latestKeyRef.current === key) setLoading(false);
     }
   }, [playthroughId]);
 
