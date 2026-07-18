@@ -108,26 +108,30 @@ export function TeamAnalysis({ playthroughId, teamMembers }: TeamAnalysisProps) 
   const teamSize = teamMembers.length;
   const cacheKey = teamSize > 0 ? cacheKeyFor(playthroughId, teamMembers) : null;
 
-  // The most recently requested cache key. The analysis endpoint reads CURRENT
-  // DB state (it isn't parameterized by composition), so if the team changes
-  // K -> K2 while K's request is still in flight, K's response actually
-  // contains K2's data. We capture the key at fetch start and, on resolve,
-  // drop any response whose key is no longer the latest — so a stale response
-  // is never displayed nor cached under the wrong key.
-  const latestKeyRef = useRef<string | null>(null);
+  // Monotonic id stamped on each fetch; only the most recent request may
+  // commit its result. The analysis endpoint reads CURRENT DB state (it isn't
+  // parameterized by composition), so a completed-but-superseded response can
+  // carry the wrong composition's data. Key identity is NOT enough to detect
+  // this: an A -> B -> A ("ABA") change makes the first (still-in-flight) A
+  // request's key match the current key again when it finally lands, so a
+  // key-guard would wrongly accept it. Discriminating by request INSTANCE
+  // closes that hole — a superseded request never matches the latest id.
+  const requestIdRef = useRef(0);
 
   const runAnalysis = useCallback(async (key: string) => {
-    latestKeyRef.current = key;
-
     const cached = analysisCache.get(key);
     if (cached) {
-      // Cache hit: resolve instantly, no flash to the loading state.
+      // Cache hit: resolve instantly, no flash to the loading state. Bump the
+      // request id so any in-flight fetch is treated as superseded.
+      requestIdRef.current += 1;
       setData(cached);
       setError(null);
       setLoading(false);
       setExpanded(true);
       return;
     }
+
+    const requestId = (requestIdRef.current += 1);
 
     // Fresh fetch for an uncached composition: drop the previous team's
     // analysis so stale data can't linger behind the loading state (or beside
@@ -138,9 +142,9 @@ export function TeamAnalysis({ playthroughId, teamMembers }: TeamAnalysisProps) 
     try {
       const res = await fetch(`/api/playthroughs/${playthroughId}/analysis`);
       const json = await res.json();
-      // Composition changed mid-flight — this response belongs to a superseded
-      // key. Drop it: don't cache (would mislabel), don't display.
-      if (latestKeyRef.current !== key) return;
+      // A newer request has since started — this response is superseded and may
+      // carry another composition's data. Drop it: don't cache, don't display.
+      if (requestId !== requestIdRef.current) return;
       if (!res.ok) {
         setError(json.error || 'Failed to load analysis');
         return;
@@ -149,12 +153,12 @@ export function TeamAnalysis({ playthroughId, teamMembers }: TeamAnalysisProps) 
       setData(json.data);
       setExpanded(true);
     } catch {
-      if (latestKeyRef.current !== key) return;
+      if (requestId !== requestIdRef.current) return;
       setError('Failed to load analysis');
     } finally {
       // Only the latest request owns the loading flag; a superseded request
       // resolving must not clear the spinner of the one that replaced it.
-      if (latestKeyRef.current === key) setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, [playthroughId]);
 

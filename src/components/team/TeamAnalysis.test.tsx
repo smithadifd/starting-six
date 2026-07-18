@@ -216,6 +216,53 @@ describe('TeamAnalysis — auto-run + client cache', () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
   });
 
+  it('ABA: the original request resolving last (after K -> K2 -> K) cannot overwrite with superseded data (request-instance guard)', async () => {
+    // Request-INSTANCE identity is required here, not key identity: after
+    // K -> K2 -> K, the first (still-pending) K request's key matches the
+    // current key again, so a key-only guard would wrongly accept its response.
+    const calls: Array<ReturnType<typeof deferred<{ ok: boolean; json: () => Promise<unknown> }>>> = [];
+    const fetchMock = vi.fn().mockImplementation(() => {
+      const d = deferred<{ ok: boolean; json: () => Promise<unknown> }>();
+      calls.push(d);
+      return d.promise;
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const k2Payload = () => ({ ok: true, json: async () => ({ data: fakeAnalysisData(2, 0.99) }) });
+    const kPayload = () => ({ ok: true, json: async () => ({ data: fakeAnalysisData(1, 0.3) }) });
+
+    // K -> K2 -> K, all while the FIRST (K) request (calls[0]) is still pending.
+    const { rerender, unmount } = render(<TeamAnalysis playthroughId={203} teamMembers={[memberA]} />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1)); // fetch#1: original K
+    rerender(<TeamAnalysis playthroughId={203} teamMembers={[memberA, memberB]} />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2)); // fetch#2: K2
+    rerender(<TeamAnalysis playthroughId={203} teamMembers={[memberA]} />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3)); // fetch#3: current K
+
+    // fetch#2 (K2, superseded) and fetch#3 (the live current-K request) resolve;
+    // then fetch#1 (the ORIGINAL K request) resolves LAST carrying K2's data,
+    // because the endpoint reads live DB state.
+    calls[1].resolve(k2Payload());
+    calls[2].resolve(kPayload());
+    await waitFor(() => expect(screen.getByText('30%')).toBeInTheDocument());
+    calls[0].resolve(k2Payload());
+    await new Promise((r) => setTimeout(r, 0));
+
+    // Displayed analysis must be K's correct data — never the superseded K2
+    // payload from the original request. With only a key-guard, calls[0]
+    // (key === current K) would be accepted last and overwrite with 99%.
+    expect(screen.getByText('30%')).toBeInTheDocument();
+    expect(screen.queryByText('99%')).not.toBeInTheDocument();
+
+    // And K must be cached with K's data, not K2's: remount is an instant cache
+    // hit showing the correct analysis with no additional fetch.
+    unmount();
+    render(<TeamAnalysis playthroughId={203} teamMembers={[memberA]} />);
+    await waitFor(() => expect(screen.getByText('30%')).toBeInTheDocument());
+    expect(screen.queryByText('99%')).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(3); // cache hit — no 4th fetch
+  });
+
   it('display: switching to an uncached composition clears prior analysis and shows loading', async () => {
     const kPayload = { ok: true, json: async () => ({ data: fakeAnalysisData(1, 0.11) }) };
     const k2 = deferred<{ ok: boolean; json: () => Promise<unknown> }>();
