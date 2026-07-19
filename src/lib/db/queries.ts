@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { eq, like, and, inArray, sql, desc } from 'drizzle-orm';
 import { getDb } from './index';
 import {
@@ -220,20 +221,24 @@ export function setSyncSchedule(enabled: boolean, frequency: SyncFrequency) {
 }
 
 /**
- * Records the outcome of a scheduled attempt — always bumps `lastAttemptAt`
- * (used for the post-failure backoff window), bumps `lastSuccessAt` only on
- * success (the value the weekly/monthly "overdue" check is measured against),
- * and tracks a same-day attempt count so the scheduler never exceeds the
- * daily attempt cap. Creates the singleton row on first use.
+ * Records that a scheduled attempt is STARTING — called immediately after
+ * the lock is claimed, BEFORE the (long) sync begins. Bumps `lastAttemptAt`
+ * and the same-day attempt counter, and pessimistically marks the attempt
+ * status as 'failure' until `recordSyncAttemptOutcome` proves otherwise.
+ *
+ * This ordering is crash-safety, not bookkeeping pedantry: if the container
+ * crashes/OOMs mid-sync, the attempt is already on record as a failure, so
+ * after the restart the 6h failure backoff and the daily attempt cap still
+ * hold — the scheduler can't hot-loop stale-lock-reclaim + full PokéAPI
+ * refetches. Creates the singleton row on first use.
  */
-export function recordSyncAttempt(status: SyncAttemptStatus, now: Date = new Date()) {
+export function recordSyncAttemptStart(now: Date = new Date()) {
   const db = getDb();
   const nowIso = now.toISOString();
   const today = nowIso.slice(0, 10);
 
   const current = getSyncSchedule();
   const attemptsToday = current.attemptsTodayDate === today ? current.attemptsToday + 1 : 1;
-  const lastSuccessAt = status === 'success' ? nowIso : current.lastSuccessAt;
 
   db.insert(syncSchedule)
     .values({
@@ -241,8 +246,8 @@ export function recordSyncAttempt(status: SyncAttemptStatus, now: Date = new Dat
       enabled: current.enabled,
       frequency: current.frequency,
       lastAttemptAt: nowIso,
-      lastAttemptStatus: status,
-      lastSuccessAt,
+      lastAttemptStatus: 'failure',
+      lastSuccessAt: current.lastSuccessAt,
       attemptsToday,
       attemptsTodayDate: today,
     })
@@ -250,10 +255,44 @@ export function recordSyncAttempt(status: SyncAttemptStatus, now: Date = new Dat
       target: syncSchedule.id,
       set: {
         lastAttemptAt: nowIso,
-        lastAttemptStatus: status,
-        lastSuccessAt,
+        lastAttemptStatus: 'failure',
         attemptsToday,
         attemptsTodayDate: today,
+        updatedAt: sql`(datetime('now'))`,
+      },
+    })
+    .run();
+}
+
+/**
+ * Records how the attempt started by `recordSyncAttemptStart` actually
+ * ended. On success, additionally stamps `lastSuccessAt` (the value the
+ * weekly/monthly "overdue" check is measured against). Never touches
+ * `lastAttemptAt` or the daily counter — those belong to the start record.
+ */
+export function recordSyncAttemptOutcome(status: SyncAttemptStatus, now: Date = new Date()) {
+  const db = getDb();
+  const nowIso = now.toISOString();
+
+  const current = getSyncSchedule();
+  const lastSuccessAt = status === 'success' ? nowIso : current.lastSuccessAt;
+
+  db.insert(syncSchedule)
+    .values({
+      id: 1,
+      enabled: current.enabled,
+      frequency: current.frequency,
+      lastAttemptAt: current.lastAttemptAt ?? nowIso,
+      lastAttemptStatus: status,
+      lastSuccessAt,
+      attemptsToday: current.attemptsToday,
+      attemptsTodayDate: current.attemptsTodayDate,
+    })
+    .onConflictDoUpdate({
+      target: syncSchedule.id,
+      set: {
+        lastAttemptStatus: status,
+        lastSuccessAt,
         updatedAt: sql`(datetime('now'))`,
       },
     })
@@ -279,29 +318,45 @@ export type SyncLockSource = 'manual' | 'scheduled';
 // constant, not user input.
 
 /**
- * Atomically claims the sync lock for `source`. Returns true if the claim
- * succeeded (caller now owns exclusive access to the sync pipeline), false
- * if another sync currently holds an unexpired claim. Backed by a single
- * conditional UPDATE so it's safe under concurrent callers — no
- * module-local boolean, so a container restart mid-sync doesn't leave the
- * lock stuck (a stale claim past the timeout is reclaimable).
+ * Atomically claims the sync lock for `source`. Returns an opaque owner
+ * token if the claim succeeded (caller now owns exclusive access to the
+ * sync pipeline), or null if another sync currently holds an unexpired
+ * claim. Backed by a single conditional UPDATE so it's safe under
+ * concurrent callers — no module-local boolean, so a container restart
+ * mid-sync doesn't leave the lock stuck (a stale claim past the timeout is
+ * reclaimable).
+ *
+ * The token is what makes stale-claim stealing safe: if a slow sync
+ * outlives the timeout and its claim is stolen, the original owner's
+ * eventual `releaseSyncLock(itsOldToken)` no longer matches the row and is
+ * a no-op — it can never clear the new owner's claim out from under it.
  */
-export function claimSyncLock(source: SyncLockSource): boolean {
+export function claimSyncLock(source: SyncLockSource): string | null {
   const db = getDb();
   // Ensure the singleton row exists — first call on a fresh database.
-  db.run(sql`INSERT INTO sync_lock (id, claimed_by, claimed_at) VALUES (1, NULL, NULL) ON CONFLICT (id) DO NOTHING`);
+  db.run(sql`INSERT INTO sync_lock (id, claimed_by, claimed_at, claim_token) VALUES (1, NULL, NULL, NULL) ON CONFLICT (id) DO NOTHING`);
+  const token = randomUUID();
   const result = db.run(sql`
     UPDATE sync_lock
-    SET claimed_by = ${source}, claimed_at = datetime('now')
+    SET claimed_by = ${source}, claimed_at = datetime('now'), claim_token = ${token}
     WHERE id = 1 AND (claimed_by IS NULL OR claimed_at < datetime('now', '-30 minutes'))
   `);
-  return result.changes > 0;
+  return result.changes > 0 ? token : null;
 }
 
-/** Releases the sync lock. Safe to call even if no claim is held. */
-export function releaseSyncLock(): void {
+/**
+ * Releases the sync lock — but only if `token` still matches the current
+ * claim (compare-and-clear in a single UPDATE). A stale owner whose claim
+ * was stolen after the timeout no-ops here instead of clearing the new
+ * owner's lock. Safe to call with any token when no claim is held.
+ */
+export function releaseSyncLock(token: string): void {
   const db = getDb();
-  db.run(sql`UPDATE sync_lock SET claimed_by = NULL, claimed_at = NULL WHERE id = 1`);
+  db.run(sql`
+    UPDATE sync_lock
+    SET claimed_by = NULL, claimed_at = NULL, claim_token = NULL
+    WHERE id = 1 AND claim_token = ${token}
+  `);
 }
 
 // ===========================================

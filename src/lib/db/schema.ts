@@ -178,11 +178,15 @@ export const syncSchedule = sqliteTable('sync_schedule', {
  * pipeline across the manual (`POST /api/sync`) and scheduled entry points.
  * A stale claim (older than the timeout) can be reclaimed, so a container
  * restart mid-sync self-heals instead of deadlocking future syncs.
+ * `claimToken` identifies the current owner: release is a compare-and-clear
+ * against it, so a stale owner whose claim was stolen can never release the
+ * new owner's lock.
  */
 export const syncLock = sqliteTable('sync_lock', {
   id: integer('id').primaryKey(),
   claimedBy: text('claimed_by'), // 'manual' | 'scheduled' | null
   claimedAt: text('claimed_at'),
+  claimToken: text('claim_token'),
 });
 
 // ===========================================

@@ -1,5 +1,11 @@
 import { runFullSync } from '@/lib/sync';
-import { claimSyncLock, releaseSyncLock, getSyncSchedule, recordSyncAttempt } from '@/lib/db/queries';
+import {
+  claimSyncLock,
+  releaseSyncLock,
+  getSyncSchedule,
+  recordSyncAttemptStart,
+  recordSyncAttemptOutcome,
+} from '@/lib/db/queries';
 import type { SyncScheduleState } from '@/lib/db/queries';
 import { isDemoMode } from '@/lib/demo';
 
@@ -77,18 +83,38 @@ export async function runScheduledCheck(now: Date = new Date()): Promise<void> {
   // Shared coordinator with the manual sync route — if a manual sync (or,
   // in theory, an overlapping tick) is already running, skip this tick and
   // let the next hourly check re-evaluate. Never aborts an in-flight sync.
-  if (!claimSyncLock('scheduled')) return;
+  // The returned owner token is required to release: if THIS run overstays
+  // the stale-claim timeout and its claim gets stolen, our release below
+  // no-ops instead of clearing the thief's (i.e. the new owner's) lock.
+  const lockToken = claimSyncLock('scheduled');
+  if (!lockToken) return;
 
-  console.log('[scheduler] Starting scheduled PokéAPI refresh sync...');
   try {
+    // Revalidate UNDER the lock: the eligibility read above raced with any
+    // concurrent writes — a toggle-off PUT, or a manual sync completing —
+    // that may have landed between that read and the claim. Only this
+    // post-claim read is authoritative; if it says disabled or no longer
+    // due, release and skip without recording an attempt.
+    const fresh = getSyncSchedule();
+    if (!isSyncDue(fresh, now)) return;
+
+    // Record the attempt BEFORE the long fetch (pessimistically marked as a
+    // failure until proven otherwise). If the container crashes/OOMs
+    // mid-sync there is still an attempt on record, so after restart the 6h
+    // failure backoff + daily cap hold instead of an immediate
+    // stale-lock-reclaim + full PokéAPI refetch loop.
+    recordSyncAttemptStart(now);
+
+    console.log('[scheduler] Starting scheduled PokéAPI refresh sync...');
     const result = await runFullSync(() => {}, { refresh: true, trigger: 'scheduled' });
-    recordSyncAttempt(result.status === 'error' ? 'failure' : 'success', now);
+    recordSyncAttemptOutcome(result.status === 'error' ? 'failure' : 'success', now);
     console.log(`[scheduler] Scheduled sync finished with status=${result.status}`);
   } catch (err) {
-    recordSyncAttempt('failure', now);
+    // No outcome write needed: recordSyncAttemptStart already persisted a
+    // pessimistic 'failure' attempt, which is exactly the truth here.
     console.error('[scheduler] Scheduled sync threw:', err);
   } finally {
-    releaseSyncLock();
+    releaseSyncLock(lockToken);
   }
 }
 

@@ -164,7 +164,8 @@ function ensureSchema(sqlite: BetterSqlite3.Database) {
     CREATE TABLE IF NOT EXISTS sync_lock (
       id INTEGER PRIMARY KEY,
       claimed_by TEXT,
-      claimed_at TEXT
+      claimed_at TEXT,
+      claim_token TEXT
     );
 
     -- Better Auth tables (snake_case columns, integer timestamps)

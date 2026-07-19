@@ -15,5 +15,6 @@ CREATE TABLE `sync_schedule` (
 CREATE TABLE `sync_lock` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`claimed_by` text,
-	`claimed_at` text
+	`claimed_at` text,
+	`claim_token` text
 );

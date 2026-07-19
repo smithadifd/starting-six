@@ -9,7 +9,8 @@ vi.mock('@/lib/db/queries', () => ({
   claimSyncLock: vi.fn(),
   releaseSyncLock: vi.fn(),
   getSyncSchedule: vi.fn(),
-  recordSyncAttempt: vi.fn(),
+  recordSyncAttemptStart: vi.fn(),
+  recordSyncAttemptOutcome: vi.fn(),
 }));
 
 vi.mock('@/lib/demo', () => ({
@@ -17,9 +18,17 @@ vi.mock('@/lib/demo', () => ({
 }));
 
 import { runFullSync } from '@/lib/sync';
-import { claimSyncLock, releaseSyncLock, getSyncSchedule, recordSyncAttempt } from '@/lib/db/queries';
+import {
+  claimSyncLock,
+  releaseSyncLock,
+  getSyncSchedule,
+  recordSyncAttemptStart,
+  recordSyncAttemptOutcome,
+} from '@/lib/db/queries';
 import { isDemoMode } from '@/lib/demo';
 import { isSyncDue, runScheduledCheck, FAILURE_BACKOFF_MS } from './index';
+
+const LOCK_TOKEN = 'test-owner-token-1234';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const NOW = new Date('2026-07-18T12:00:00.000Z');
@@ -94,7 +103,7 @@ describe('isSyncDue', () => {
   });
 
   it('runs once: right after a success, the very next tick is not due yet', () => {
-    // Simulates the state written by recordSyncAttempt('success', now) and
+    // Simulates the state written by a successful attempt (start + success outcome) and
     // asks whether the next poll tick (same instant) would re-fire.
     const s = state({ frequency: 'weekly', lastSuccessAt: NOW.toISOString() });
     expect(isSyncDue(s, NOW)).toBe(false);
@@ -156,7 +165,7 @@ describe('runScheduledCheck', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(isDemoMode).mockReturnValue(false);
-    vi.mocked(claimSyncLock).mockReturnValue(true);
+    vi.mocked(claimSyncLock).mockReturnValue(LOCK_TOKEN);
   });
 
   afterEach(() => {
@@ -191,13 +200,62 @@ describe('runScheduledCheck', () => {
     expect(runFullSync).toHaveBeenCalledTimes(1);
     const [, options] = vi.mocked(runFullSync).mock.calls[0];
     expect(options).toEqual({ refresh: true, trigger: 'scheduled' });
-    expect(recordSyncAttempt).toHaveBeenCalledWith('success', NOW);
+    expect(recordSyncAttemptStart).toHaveBeenCalledWith(NOW);
+    expect(recordSyncAttemptOutcome).toHaveBeenCalledWith('success', NOW);
     expect(releaseSyncLock).toHaveBeenCalledTimes(1);
+  });
+
+  it('OWNER TOKEN: releases with exactly the token the claim returned', async () => {
+    vi.mocked(getSyncSchedule).mockReturnValue(state({ lastSuccessAt: null }));
+    vi.mocked(runFullSync).mockResolvedValue({ status: 'success', stages: [], totalProcessed: 10, totalFailed: 0 });
+
+    await runScheduledCheck(NOW);
+
+    expect(releaseSyncLock).toHaveBeenCalledWith(LOCK_TOKEN);
+  });
+
+  it('CRASH-SAFE ORDER: the attempt is recorded BEFORE the sync starts, not after it returns', async () => {
+    vi.mocked(getSyncSchedule).mockReturnValue(state({ lastSuccessAt: null }));
+    vi.mocked(runFullSync).mockResolvedValue({ status: 'success', stages: [], totalProcessed: 10, totalFailed: 0 });
+
+    await runScheduledCheck(NOW);
+
+    const startOrder = vi.mocked(recordSyncAttemptStart).mock.invocationCallOrder[0];
+    const syncOrder = vi.mocked(runFullSync).mock.invocationCallOrder[0];
+    expect(startOrder).toBeLessThan(syncOrder);
+  });
+
+  it('REVALIDATION: toggle-off lands between the eligibility read and the claim → releases and skips, no sync, no attempt burned', async () => {
+    // First read (pre-claim eligibility): enabled + overdue. Second read
+    // (post-claim revalidation): a concurrent PUT turned the toggle off.
+    vi.mocked(getSyncSchedule)
+      .mockReturnValueOnce(state({ lastSuccessAt: null }))
+      .mockReturnValueOnce(state({ enabled: false, lastSuccessAt: null }));
+
+    await runScheduledCheck(NOW);
+
+    expect(claimSyncLock).toHaveBeenCalledTimes(1);
+    expect(getSyncSchedule).toHaveBeenCalledTimes(2); // the post-claim re-read happened
+    expect(runFullSync).not.toHaveBeenCalled();
+    expect(recordSyncAttemptStart).not.toHaveBeenCalled(); // a skipped tick costs no attempt
+    expect(releaseSyncLock).toHaveBeenCalledWith(LOCK_TOKEN); // claimed, so it must release
+  });
+
+  it('REVALIDATION: no-longer-due (e.g. a manual sync succeeded while we raced to claim) → releases and skips', async () => {
+    vi.mocked(getSyncSchedule)
+      .mockReturnValueOnce(state({ lastSuccessAt: isoBefore(8 * DAY_MS) })) // stale read: overdue
+      .mockReturnValueOnce(state({ lastSuccessAt: NOW.toISOString() })); // fresh read: just synced
+
+    await runScheduledCheck(NOW);
+
+    expect(runFullSync).not.toHaveBeenCalled();
+    expect(recordSyncAttemptStart).not.toHaveBeenCalled();
+    expect(releaseSyncLock).toHaveBeenCalledWith(LOCK_TOKEN);
   });
 
   it('due but another sync already holds the claim: does not run, does not release a lock it never held', async () => {
     vi.mocked(getSyncSchedule).mockReturnValue(state({ lastSuccessAt: null }));
-    vi.mocked(claimSyncLock).mockReturnValue(false);
+    vi.mocked(claimSyncLock).mockReturnValue(null);
 
     await runScheduledCheck(NOW);
 
@@ -205,33 +263,35 @@ describe('runScheduledCheck', () => {
     expect(releaseSyncLock).not.toHaveBeenCalled();
   });
 
-  it('sync completes with status "error": records a failed attempt (drives backoff)', async () => {
+  it('sync completes with status "error": outcome recorded as failure (drives backoff)', async () => {
     vi.mocked(getSyncSchedule).mockReturnValue(state({ lastSuccessAt: null }));
     vi.mocked(runFullSync).mockResolvedValue({ status: 'error', stages: [], totalProcessed: 0, totalFailed: 5 });
 
     await runScheduledCheck(NOW);
 
-    expect(recordSyncAttempt).toHaveBeenCalledWith('failure', NOW);
+    expect(recordSyncAttemptStart).toHaveBeenCalledWith(NOW);
+    expect(recordSyncAttemptOutcome).toHaveBeenCalledWith('failure', NOW);
     expect(releaseSyncLock).toHaveBeenCalledTimes(1);
   });
 
-  it('sync completes with status "partial": still recorded as a success attempt (some data landed)', async () => {
+  it('sync completes with status "partial": outcome recorded as success (some data landed)', async () => {
     vi.mocked(getSyncSchedule).mockReturnValue(state({ lastSuccessAt: null }));
     vi.mocked(runFullSync).mockResolvedValue({ status: 'partial', stages: [], totalProcessed: 8, totalFailed: 2 });
 
     await runScheduledCheck(NOW);
 
-    expect(recordSyncAttempt).toHaveBeenCalledWith('success', NOW);
+    expect(recordSyncAttemptOutcome).toHaveBeenCalledWith('success', NOW);
   });
 
-  it('runFullSync throws: still records a failed attempt and always releases the lock', async () => {
+  it('runFullSync throws: the pessimistic start record already marked the failure — no outcome write, lock still released', async () => {
     vi.mocked(getSyncSchedule).mockReturnValue(state({ lastSuccessAt: null }));
     vi.mocked(runFullSync).mockRejectedValue(new Error('network exploded'));
 
     await runScheduledCheck(NOW);
 
-    expect(recordSyncAttempt).toHaveBeenCalledWith('failure', NOW);
-    expect(releaseSyncLock).toHaveBeenCalledTimes(1);
+    expect(recordSyncAttemptStart).toHaveBeenCalledWith(NOW); // attempt on record BEFORE the throw
+    expect(recordSyncAttemptOutcome).not.toHaveBeenCalled(); // start's 'failure' is already the truth
+    expect(releaseSyncLock).toHaveBeenCalledWith(LOCK_TOKEN);
   });
 
   it('DEMO_MODE=true refuses to run even when due (defense in depth alongside initScheduler)', async () => {
@@ -267,7 +327,8 @@ describe('initScheduler', () => {
       claimSyncLock: vi.fn(),
       releaseSyncLock: vi.fn(),
       getSyncSchedule: vi.fn(),
-      recordSyncAttempt: vi.fn(),
+      recordSyncAttemptStart: vi.fn(),
+      recordSyncAttemptOutcome: vi.fn(),
     }));
 
     const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout');
@@ -286,7 +347,8 @@ describe('initScheduler', () => {
       claimSyncLock: vi.fn(),
       releaseSyncLock: vi.fn(),
       getSyncSchedule: vi.fn(),
-      recordSyncAttempt: vi.fn(),
+      recordSyncAttemptStart: vi.fn(),
+      recordSyncAttemptOutcome: vi.fn(),
     }));
 
     const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout');
@@ -305,7 +367,8 @@ describe('initScheduler', () => {
       claimSyncLock: vi.fn(),
       releaseSyncLock: vi.fn(),
       getSyncSchedule: vi.fn(),
-      recordSyncAttempt: vi.fn(),
+      recordSyncAttemptStart: vi.fn(),
+      recordSyncAttemptOutcome: vi.fn(),
     }));
 
     const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout');

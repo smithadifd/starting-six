@@ -19,8 +19,12 @@ export async function POST(request: Request) {
 
   // SQLite-backed claim shared with the scheduled re-sync — see
   // src/lib/db/queries.ts#claimSyncLock. Not a module-local boolean, so a
-  // container restart mid-sync can't wedge future syncs.
-  if (!claimSyncLock('manual')) {
+  // container restart mid-sync can't wedge future syncs. The owner token is
+  // required to release: if this sync overstays the stale-claim timeout and
+  // its claim is stolen, the release below no-ops instead of clearing the
+  // new owner's lock.
+  const lockToken = claimSyncLock('manual');
+  if (!lockToken) {
     return apiValidationError('A sync is already in progress');
   }
 
@@ -46,7 +50,7 @@ export async function POST(request: Request) {
         const message = err instanceof Error ? err.message : 'Unknown error';
         sendEvent('error', { message });
       } finally {
-        releaseSyncLock();
+        releaseSyncLock(lockToken);
         controller.close();
       }
     },

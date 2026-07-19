@@ -162,7 +162,8 @@ export function createTestDb() {
     CREATE TABLE IF NOT EXISTS sync_lock (
       id INTEGER PRIMARY KEY,
       claimed_by TEXT,
-      claimed_at TEXT
+      claimed_at TEXT,
+      claim_token TEXT
     );
 
     CREATE TABLE IF NOT EXISTS user (
