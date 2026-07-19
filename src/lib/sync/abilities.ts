@@ -23,17 +23,21 @@ const NOTABLE_SLUGS = new Set([
 
 /**
  * Stage 5: Fetch ability details and create pokemon_abilities junctions.
+ * When `refresh` is true, skips the "already populated" short-circuit and
+ * UPSERTs both `abilities` (by `pokeapiId`) and the `pokemon_abilities`
+ * junction (by `pokemonId`+`slot`) instead of insert-only.
  */
 export async function syncAbilities(
   junctions: PokemonJunctionData[],
   onProgress: ProgressCallback,
+  refresh = false,
 ): Promise<StageResult> {
   const db = getDb();
 
   const existingAbilities = db.select({ count: sql<number>`count(*)` }).from(abilities).get()?.count ?? 0;
   const existingJunctions = db.select({ count: sql<number>`count(*)` }).from(pokemonAbilities).get()?.count ?? 0;
 
-  if (existingAbilities > 0 && existingJunctions > 0) {
+  if (existingAbilities > 0 && existingJunctions > 0 && !refresh) {
     return { stage: 5, name: 'Abilities', processed: existingAbilities, failed: 0, skipped: true };
   }
 
@@ -52,7 +56,7 @@ export async function syncAbilities(
   let failed = 0;
 
   // Fetch ability details
-  if (existingAbilities === 0) {
+  if (refresh || existingAbilities === 0) {
     const details = await fetchBatch(
       abilityIds,
       async (id) => {
@@ -72,27 +76,30 @@ export async function syncAbilities(
       for (const ability of details) {
         if (!ability) continue;
         const englishEffect = ability.effect_entries.find((e) => e.language.name === 'en');
-        db.insert(abilities)
-          .values({
-            pokeapiId: ability.id,
-            slug: ability.name,
-            name: ability.name
-              .split('-')
-              .filter(Boolean)
-              .map((w) => w[0].toUpperCase() + w.slice(1))
-              .join(' '),
-            effectShort: englishEffect?.short_effect ?? null,
-            effectFull: englishEffect?.effect ?? null,
-            isNotable: NOTABLE_SLUGS.has(ability.name),
-          })
-          .onConflictDoNothing()
-          .run();
+        const values = {
+          pokeapiId: ability.id,
+          slug: ability.name,
+          name: ability.name
+            .split('-')
+            .filter(Boolean)
+            .map((w) => w[0].toUpperCase() + w.slice(1))
+            .join(' '),
+          effectShort: englishEffect?.short_effect ?? null,
+          effectFull: englishEffect?.effect ?? null,
+          isNotable: NOTABLE_SLUGS.has(ability.name),
+        };
+        const insert = db.insert(abilities).values(values);
+        if (refresh) {
+          insert.onConflictDoUpdate({ target: abilities.pokeapiId, set: values }).run();
+        } else {
+          insert.onConflictDoNothing().run();
+        }
       }
     });
   }
 
   // Create pokemon_abilities junctions
-  if (existingJunctions === 0 && junctions.length > 0) {
+  if ((refresh || existingJunctions === 0) && junctions.length > 0) {
     // Build lookup maps
     const abilityIdMap = new Map<number, number>();
     const allAbilities = db.select({ id: abilities.id, pokeapiId: abilities.pokeapiId }).from(abilities).all();
@@ -113,15 +120,24 @@ export async function syncAbilities(
         for (const a of j.abilities) {
           const abilityDbId = abilityIdMap.get(a.pokeapiId);
           if (!abilityDbId) continue;
-          db.insert(pokemonAbilities)
-            .values({
-              pokemonId: pokemonDbId,
-              abilityId: abilityDbId,
-              slot: a.slot,
-              isHidden: a.isHidden,
-            })
-            .onConflictDoNothing()
-            .run();
+          const insert = db.insert(pokemonAbilities).values({
+            pokemonId: pokemonDbId,
+            abilityId: abilityDbId,
+            slot: a.slot,
+            isHidden: a.isHidden,
+          });
+          if (refresh) {
+            // (pokemonId, slot) is the identity; abilityId/isHidden are the
+            // mutable payload — e.g. PokéAPI reordering a hidden ability's slot.
+            insert
+              .onConflictDoUpdate({
+                target: [pokemonAbilities.pokemonId, pokemonAbilities.slot],
+                set: { abilityId: abilityDbId, isHidden: a.isHidden },
+              })
+              .run();
+          } else {
+            insert.onConflictDoNothing().run();
+          }
         }
       }
     });

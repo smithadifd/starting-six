@@ -48,11 +48,14 @@ function formatVersionGroupName(slug: string): string {
 
 /**
  * Stage 1: Sync version groups (game titles).
+ * When `refresh` is true, skips the "already populated" short-circuit and
+ * UPSERTs every row instead of inserting-only — used by the scheduled
+ * re-sync so a run against an already-synced database still does work.
  */
-export async function syncVersionGroups(onProgress: ProgressCallback): Promise<StageResult> {
+export async function syncVersionGroups(onProgress: ProgressCallback, refresh = false): Promise<StageResult> {
   const db = getDb();
   const existing = db.select({ count: sql<number>`count(*)` }).from(versionGroups).get()?.count ?? 0;
-  if (existing > 0) {
+  if (existing > 0 && !refresh) {
     return { stage: 1, name: 'Version Groups', processed: existing, failed: 0, skipped: true };
   }
 
@@ -69,16 +72,24 @@ export async function syncVersionGroups(onProgress: ProgressCallback): Promise<S
   db.transaction(() => {
     for (const vg of details) {
       const generation = extractIdFromUrl(vg.generation.url);
-      db.insert(versionGroups)
-        .values({
-          pokeapiId: vg.id,
-          slug: vg.name,
-          name: formatVersionGroupName(vg.name),
-          generation,
-          displayOrder: vg.order,
-        })
-        .onConflictDoNothing()
-        .run();
+      const values = {
+        pokeapiId: vg.id,
+        slug: vg.name,
+        name: formatVersionGroupName(vg.name),
+        generation,
+        displayOrder: vg.order,
+      };
+      const insert = db.insert(versionGroups).values(values);
+      if (refresh) {
+        insert
+          .onConflictDoUpdate({
+            target: versionGroups.pokeapiId,
+            set: { slug: values.slug, name: values.name, generation: values.generation, displayOrder: values.displayOrder },
+          })
+          .run();
+      } else {
+        insert.onConflictDoNothing().run();
+      }
     }
   });
 
@@ -87,11 +98,12 @@ export async function syncVersionGroups(onProgress: ProgressCallback): Promise<S
 
 /**
  * Stage 2: Sync game dexes (which species appear in which games).
+ * See `syncVersionGroups` for `refresh` semantics.
  */
-export async function syncGameDexes(onProgress: ProgressCallback): Promise<StageResult> {
+export async function syncGameDexes(onProgress: ProgressCallback, refresh = false): Promise<StageResult> {
   const db = getDb();
   const existing = db.select({ count: sql<number>`count(*)` }).from(gamePokemon).get()?.count ?? 0;
-  if (existing > 0) {
+  if (existing > 0 && !refresh) {
     return { stage: 2, name: 'Game Dexes', processed: existing, failed: 0, skipped: true };
   }
 
@@ -142,14 +154,21 @@ export async function syncGameDexes(onProgress: ProgressCallback): Promise<Stage
   // Bulk insert in a transaction
   db.transaction(() => {
     for (const entry of allEntries) {
-      db.insert(gamePokemon)
-        .values({
-          versionGroupId: entry.vgDbId,
-          speciesId: entry.speciesId,
-          dexNumber: entry.dexNumber,
-        })
-        .onConflictDoNothing()
-        .run();
+      const insert = db.insert(gamePokemon).values({
+        versionGroupId: entry.vgDbId,
+        speciesId: entry.speciesId,
+        dexNumber: entry.dexNumber,
+      });
+      if (refresh) {
+        insert
+          .onConflictDoUpdate({
+            target: [gamePokemon.versionGroupId, gamePokemon.speciesId],
+            set: { dexNumber: entry.dexNumber },
+          })
+          .run();
+      } else {
+        insert.onConflictDoNothing().run();
+      }
     }
   });
 

@@ -15,6 +15,13 @@
       "when": 1774623627239,
       "tag": "0001_brief_starfox",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1784427552431,
+      "tag": "0002_overconfident_kitty_pryde",
+      "breakpoints": true
     }
   ]
 }

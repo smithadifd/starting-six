@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { Database, Clock } from 'lucide-react';
 import { SyncStatus } from '@/components/sync/SyncStatus';
+import { ScheduleSettings } from '@/components/sync/ScheduleSettings';
 
 interface SystemSettingsProps {
   counts: { pokemon: number; moves: number; abilities: number; versionGroups: number };
   recentLogs: {
     id: number;
     source: string;
+    trigger: string;
     status: string;
     itemsProcessed: number | null;
     itemsAttempted: number | null;
@@ -17,6 +19,12 @@ interface SystemSettingsProps {
     startedAt: string;
     completedAt: string | null;
   }[];
+  schedule: {
+    enabled: boolean;
+    frequency: 'weekly' | 'monthly';
+    lastAttemptAt: string | null;
+    lastAttemptStatus: 'success' | 'failure' | null;
+  };
 }
 
 function statusColor(status: string): string {
@@ -29,7 +37,7 @@ function statusColor(status: string): string {
   }
 }
 
-export function SystemSettings({ counts: initialCounts, recentLogs }: SystemSettingsProps) {
+export function SystemSettings({ counts: initialCounts, recentLogs, schedule }: SystemSettingsProps) {
   const [counts, setCounts] = useState(initialCounts);
 
   function handleSyncComplete() {
@@ -75,6 +83,9 @@ export function SystemSettings({ counts: initialCounts, recentLogs }: SystemSett
       {/* Sync trigger */}
       <SyncStatus onSyncComplete={handleSyncComplete} />
 
+      {/* Scheduled re-sync (off by default) */}
+      <ScheduleSettings initial={schedule} />
+
       {/* Sync history */}
       {recentLogs.length > 0 && (
         <div className="rounded-xl ghost-border bg-card p-6">
@@ -92,6 +103,11 @@ export function SystemSettings({ counts: initialCounts, recentLogs }: SystemSett
                   <span className={`font-medium ${statusColor(log.status)}`}>
                     {log.status}
                   </span>
+                  {log.trigger === 'scheduled' && (
+                    <span className="text-xs rounded-full border border-border px-2 py-0.5 text-muted-foreground">
+                      scheduled
+                    </span>
+                  )}
                   <span className="text-muted-foreground">
                     {log.itemsProcessed?.toLocaleString() ?? 0} items
                     {(log.itemsFailed ?? 0) > 0 && (

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { requireUserId } from '@/lib/auth-helpers';
-import { getSyncCounts, getRecentSyncLogs } from '@/lib/db/queries';
+import { getSyncCounts, getRecentSyncLogs, getSyncSchedule } from '@/lib/db/queries';
 import { SystemSettings } from './SystemSettings';
 
 export const dynamic = 'force-dynamic';
@@ -14,6 +14,7 @@ export default async function SystemSettingsPage() {
 
   const counts = getSyncCounts();
   const recentLogs = getRecentSyncLogs(10);
+  const schedule = getSyncSchedule();
 
-  return <SystemSettings counts={counts} recentLogs={recentLogs} />;
+  return <SystemSettings counts={counts} recentLogs={recentLogs} schedule={schedule} />;
 }

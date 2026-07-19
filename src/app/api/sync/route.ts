@@ -2,9 +2,7 @@ import { requireUserIdFromRequest } from '@/lib/auth-helpers';
 import { apiUnauthorized, apiValidationError } from '@/lib/utils/api';
 import { syncTriggerSchema, formatZodError } from '@/lib/validations';
 import { runFullSync } from '@/lib/sync';
-
-// Prevent concurrent syncs
-let syncInProgress = false;
+import { claimSyncLock, releaseSyncLock } from '@/lib/db/queries';
 
 export async function POST(request: Request) {
   try {
@@ -19,11 +17,16 @@ export async function POST(request: Request) {
     return apiValidationError(formatZodError(parsed.error));
   }
 
-  if (syncInProgress) {
+  // SQLite-backed claim shared with the scheduled re-sync — see
+  // src/lib/db/queries.ts#claimSyncLock. Not a module-local boolean, so a
+  // container restart mid-sync can't wedge future syncs. The owner token is
+  // required to release: if this sync overstays the stale-claim timeout and
+  // its claim is stolen, the release below no-ops instead of clearing the
+  // new owner's lock.
+  const lockToken = claimSyncLock('manual');
+  if (!lockToken) {
     return apiValidationError('A sync is already in progress');
   }
-
-  syncInProgress = true;
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -35,7 +38,7 @@ export async function POST(request: Request) {
       try {
         const result = await runFullSync((stage, stageName, processed, total) => {
           sendEvent('progress', { stage, stageName, processed, total });
-        });
+        }, { trigger: 'manual' });
 
         sendEvent('complete', {
           status: result.status,
@@ -47,7 +50,7 @@ export async function POST(request: Request) {
         const message = err instanceof Error ? err.message : 'Unknown error';
         sendEvent('error', { message });
       } finally {
-        syncInProgress = false;
+        releaseSyncLock(lockToken);
         controller.close();
       }
     },

@@ -7,17 +7,23 @@ import type { ProgressCallback, StageResult, PokemonJunctionData } from './types
 
 /**
  * Stage 6: Fetch move details and create pokemon_moves junctions.
+ * When `refresh` is true, skips the "already populated" short-circuit and
+ * UPSERTs `moves` (by `pokeapiId`) instead of insert-only. The
+ * `pokemon_moves` junction has no mutable payload beyond the
+ * (pokemonId, moveId) pair itself, so it stays insert-or-ignore even in
+ * refresh mode — that already picks up newly-learned moves.
  */
 export async function syncMoves(
   junctions: PokemonJunctionData[],
   onProgress: ProgressCallback,
+  refresh = false,
 ): Promise<StageResult> {
   const db = getDb();
 
   const existingMoves = db.select({ count: sql<number>`count(*)` }).from(moves).get()?.count ?? 0;
   const existingJunctions = db.select({ count: sql<number>`count(*)` }).from(pokemonMoves).get()?.count ?? 0;
 
-  if (existingMoves > 0 && existingJunctions > 0) {
+  if (existingMoves > 0 && existingJunctions > 0 && !refresh) {
     return { stage: 6, name: 'Moves', processed: existingMoves, failed: 0, skipped: true };
   }
 
@@ -36,7 +42,7 @@ export async function syncMoves(
   let failed = 0;
 
   // Fetch move details
-  if (existingMoves === 0) {
+  if (refresh || existingMoves === 0) {
     const details = await fetchBatch(
       moveIds,
       async (id) => {
@@ -56,30 +62,33 @@ export async function syncMoves(
       for (const move of details) {
         if (!move) continue;
         const englishEffect = move.effect_entries.find((e) => e.language.name === 'en');
-        db.insert(moves)
-          .values({
-            pokeapiId: move.id,
-            slug: move.name,
-            name: move.name
-              .split('-')
-              .filter(Boolean)
-              .map((w) => w[0].toUpperCase() + w.slice(1))
-              .join(' '),
-            type: move.type.name,
-            damageClass: move.damage_class.name,
-            power: move.power,
-            accuracy: move.accuracy,
-            pp: move.pp ?? 0,
-            effectShort: englishEffect?.short_effect ?? null,
-          })
-          .onConflictDoNothing()
-          .run();
+        const values = {
+          pokeapiId: move.id,
+          slug: move.name,
+          name: move.name
+            .split('-')
+            .filter(Boolean)
+            .map((w) => w[0].toUpperCase() + w.slice(1))
+            .join(' '),
+          type: move.type.name,
+          damageClass: move.damage_class.name,
+          power: move.power,
+          accuracy: move.accuracy,
+          pp: move.pp ?? 0,
+          effectShort: englishEffect?.short_effect ?? null,
+        };
+        const insert = db.insert(moves).values(values);
+        if (refresh) {
+          insert.onConflictDoUpdate({ target: moves.pokeapiId, set: values }).run();
+        } else {
+          insert.onConflictDoNothing().run();
+        }
       }
     });
   }
 
   // Create pokemon_moves junctions
-  if (existingJunctions === 0 && junctions.length > 0) {
+  if ((refresh || existingJunctions === 0) && junctions.length > 0) {
     // Build lookup maps
     const moveIdMap = new Map<number, number>();
     const allMoves = db.select({ id: moves.id, pokeapiId: moves.pokeapiId }).from(moves).all();
