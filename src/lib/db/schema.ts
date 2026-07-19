@@ -146,6 +146,7 @@ export const settings = sqliteTable('settings', {
 export const syncLog = sqliteTable('sync_log', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   source: text('source').notNull(), // 'pokeapi'
+  trigger: text('trigger').notNull().default('manual'), // 'manual' | 'scheduled'
   status: text('status').notNull(), // 'running', 'success', 'partial', 'error'
   itemsProcessed: integer('items_processed').default(0),
   itemsAttempted: integer('items_attempted').default(0),
@@ -153,6 +154,35 @@ export const syncLog = sqliteTable('sync_log', {
   errorMessage: text('error_message'),
   startedAt: text('started_at').notNull().default(sql`(datetime('now'))`),
   completedAt: text('completed_at'),
+});
+
+/**
+ * Singleton row (id always 1) holding the optional scheduled-re-sync config
+ * and the poll-based scheduler's attempt bookkeeping (used for weekly/monthly
+ * due-date math and failure backoff). Off by default.
+ */
+export const syncSchedule = sqliteTable('sync_schedule', {
+  id: integer('id').primaryKey(),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(false),
+  frequency: text('frequency').notNull().default('weekly'), // 'weekly' | 'monthly'
+  lastAttemptAt: text('last_attempt_at'),
+  lastAttemptStatus: text('last_attempt_status'), // 'success' | 'failure' | null
+  lastSuccessAt: text('last_success_at'),
+  attemptsToday: integer('attempts_today').notNull().default(0),
+  attemptsTodayDate: text('attempts_today_date'), // 'YYYY-MM-DD'
+  updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`),
+});
+
+/**
+ * Singleton row (id always 1) coordinating exclusive access to the sync
+ * pipeline across the manual (`POST /api/sync`) and scheduled entry points.
+ * A stale claim (older than the timeout) can be reclaimed, so a container
+ * restart mid-sync self-heals instead of deadlocking future syncs.
+ */
+export const syncLock = sqliteTable('sync_lock', {
+  id: integer('id').primaryKey(),
+  claimedBy: text('claimed_by'), // 'manual' | 'scheduled' | null
+  claimedAt: text('claimed_at'),
 });
 
 // ===========================================

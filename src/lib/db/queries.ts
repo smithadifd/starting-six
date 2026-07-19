@@ -11,6 +11,7 @@ import {
   playthroughs,
   teamMembers,
   syncLog,
+  syncSchedule,
   settings,
 } from './schema';
 
@@ -136,11 +137,11 @@ export function getRecentSyncLogs(limit = 20) {
     .all();
 }
 
-export function createSyncLog(source: string) {
+export function createSyncLog(source: string, trigger: 'manual' | 'scheduled' = 'manual') {
   const db = getDb();
   const result = db
     .insert(syncLog)
-    .values({ source, status: 'running' })
+    .values({ source, trigger, status: 'running' })
     .returning({ id: syncLog.id })
     .get();
   return result?.id ?? 0;
@@ -161,6 +162,140 @@ export function updateSyncLog(
     .set({ ...update, completedAt: new Date().toISOString() })
     .where(eq(syncLog.id, id))
     .run();
+}
+
+// ===========================================
+// Scheduled re-sync (config + due-date bookkeeping)
+// ===========================================
+
+export type SyncFrequency = 'weekly' | 'monthly';
+export type SyncAttemptStatus = 'success' | 'failure';
+
+export interface SyncScheduleState {
+  enabled: boolean;
+  frequency: SyncFrequency;
+  lastAttemptAt: string | null;
+  lastAttemptStatus: SyncAttemptStatus | null;
+  lastSuccessAt: string | null;
+  attemptsToday: number;
+  attemptsTodayDate: string | null;
+}
+
+const DEFAULT_SYNC_SCHEDULE: SyncScheduleState = {
+  enabled: false,
+  frequency: 'weekly',
+  lastAttemptAt: null,
+  lastAttemptStatus: null,
+  lastSuccessAt: null,
+  attemptsToday: 0,
+  attemptsTodayDate: null,
+};
+
+/** Reads the singleton schedule row, defaulting to "off" if it doesn't exist yet. */
+export function getSyncSchedule(): SyncScheduleState {
+  const db = getDb();
+  const row = db.select().from(syncSchedule).where(eq(syncSchedule.id, 1)).get();
+  if (!row) return DEFAULT_SYNC_SCHEDULE;
+  return {
+    enabled: row.enabled,
+    frequency: row.frequency as SyncFrequency,
+    lastAttemptAt: row.lastAttemptAt,
+    lastAttemptStatus: row.lastAttemptStatus as SyncAttemptStatus | null,
+    lastSuccessAt: row.lastSuccessAt,
+    attemptsToday: row.attemptsToday,
+    attemptsTodayDate: row.attemptsTodayDate,
+  };
+}
+
+/** Updates the toggle + frequency. Creates the singleton row on first use. */
+export function setSyncSchedule(enabled: boolean, frequency: SyncFrequency) {
+  const db = getDb();
+  db.insert(syncSchedule)
+    .values({ id: 1, enabled, frequency })
+    .onConflictDoUpdate({
+      target: syncSchedule.id,
+      set: { enabled, frequency, updatedAt: sql`(datetime('now'))` },
+    })
+    .run();
+}
+
+/**
+ * Records the outcome of a scheduled attempt — always bumps `lastAttemptAt`
+ * (used for the post-failure backoff window), bumps `lastSuccessAt` only on
+ * success (the value the weekly/monthly "overdue" check is measured against),
+ * and tracks a same-day attempt count so the scheduler never exceeds the
+ * daily attempt cap. Creates the singleton row on first use.
+ */
+export function recordSyncAttempt(status: SyncAttemptStatus, now: Date = new Date()) {
+  const db = getDb();
+  const nowIso = now.toISOString();
+  const today = nowIso.slice(0, 10);
+
+  const current = getSyncSchedule();
+  const attemptsToday = current.attemptsTodayDate === today ? current.attemptsToday + 1 : 1;
+  const lastSuccessAt = status === 'success' ? nowIso : current.lastSuccessAt;
+
+  db.insert(syncSchedule)
+    .values({
+      id: 1,
+      enabled: current.enabled,
+      frequency: current.frequency,
+      lastAttemptAt: nowIso,
+      lastAttemptStatus: status,
+      lastSuccessAt,
+      attemptsToday,
+      attemptsTodayDate: today,
+    })
+    .onConflictDoUpdate({
+      target: syncSchedule.id,
+      set: {
+        lastAttemptAt: nowIso,
+        lastAttemptStatus: status,
+        lastSuccessAt,
+        attemptsToday,
+        attemptsTodayDate: today,
+        updatedAt: sql`(datetime('now'))`,
+      },
+    })
+    .run();
+}
+
+// ===========================================
+// Sync lock (mutual exclusion between manual + scheduled sync)
+// ===========================================
+
+export type SyncLockSource = 'manual' | 'scheduled';
+
+// A claim older than 30 minutes is treated as abandoned (e.g. container
+// restarted mid-sync) — a full sync normally finishes in 5-15 minutes per
+// docs/architecture/sync-pipeline.md, so 30 is a generous margin. Kept as a
+// plain SQL literal below rather than parameterized: it's a fixed constant,
+// not user input.
+
+/**
+ * Atomically claims the sync lock for `source`. Returns true if the claim
+ * succeeded (caller now owns exclusive access to the sync pipeline), false
+ * if another sync currently holds an unexpired claim. Backed by a single
+ * conditional UPDATE so it's safe under concurrent callers — no
+ * module-local boolean, so a container restart mid-sync doesn't leave the
+ * lock stuck (a stale claim past the timeout is reclaimable).
+ */
+export function claimSyncLock(source: SyncLockSource): boolean {
+  const db = getDb();
+  // Ensure the singleton row exists — first call on a fresh database.
+  db.run(sql`INSERT INTO sync_lock (id, claimed_by, claimed_at) VALUES (1, NULL, NULL) ON CONFLICT (id) DO NOTHING`);
+  const result = db.run(sql`
+    UPDATE sync_lock
+    SET claimed_by = ${source}, claimed_at = datetime('now')
+    WHERE id = 1 AND (claimed_by IS NULL OR claimed_at < datetime('now', '-30 minutes'))
+  `);
+  return result.changes > 0;
+}
+
+/** Releases the sync lock. Safe to call even if no claim is held. */
+export function releaseSyncLock(): void {
+  const db = getDb();
+  db.run(sql`UPDATE sync_lock SET claimed_by = NULL, claimed_at = NULL WHERE id = 1`);
 }
 
 // ===========================================

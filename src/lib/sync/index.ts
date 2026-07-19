@@ -3,27 +3,37 @@ import { syncVersionGroups, syncGameDexes } from './games';
 import { syncSpecies, syncPokemonForms } from './pokemon';
 import { syncAbilities } from './abilities';
 import { syncMoves } from './moves';
-import type { ProgressCallback, SyncResult, StageResult } from './types';
+import type { ProgressCallback, SyncResult, StageResult, SyncOptions } from './types';
 
 /**
  * Run the full 6-stage PokéAPI sync pipeline.
  * Reports progress via callback (used for SSE streaming).
+ *
+ * By default each stage skips its network work when its table(s) already
+ * meet the expected row count (safe to re-run after an interrupted sync).
+ * Pass `{ refresh: true }` to force every stage to re-fetch and UPSERT
+ * instead — used by the scheduled re-sync so it actually does work instead
+ * of a no-op. Refresh never truncates or deletes rows.
  */
-export async function runFullSync(onProgress: ProgressCallback): Promise<SyncResult> {
-  const logId = createSyncLog('pokeapi');
+export async function runFullSync(
+  onProgress: ProgressCallback,
+  options: SyncOptions = {},
+): Promise<SyncResult> {
+  const { refresh = false, trigger = 'manual' } = options;
+  const logId = createSyncLog('pokeapi', trigger);
   const stages: StageResult[] = [];
   let totalProcessed = 0;
   let totalFailed = 0;
 
   try {
     // Stage 1: Version Groups
-    const stage1 = await syncVersionGroups(onProgress);
+    const stage1 = await syncVersionGroups(onProgress, refresh);
     stages.push(stage1);
     totalProcessed += stage1.processed;
     totalFailed += stage1.failed;
 
     // Stage 2: Game Dexes
-    const stage2 = await syncGameDexes(onProgress);
+    const stage2 = await syncGameDexes(onProgress, refresh);
     stages.push(stage2);
     totalProcessed += stage2.processed;
     totalFailed += stage2.failed;
@@ -35,19 +45,19 @@ export async function runFullSync(onProgress: ProgressCallback): Promise<SyncRes
     totalFailed += stage3.failed;
 
     // Stage 4: Pokemon forms → pokemon rows + junction data
-    const { result: stage4, junctions } = await syncPokemonForms(speciesMap, onProgress);
+    const { result: stage4, junctions } = await syncPokemonForms(speciesMap, onProgress, refresh);
     stages.push(stage4);
     totalProcessed += stage4.processed;
     totalFailed += stage4.failed;
 
     // Stage 5: Abilities + pokemon_abilities junctions
-    const stage5 = await syncAbilities(junctions, onProgress);
+    const stage5 = await syncAbilities(junctions, onProgress, refresh);
     stages.push(stage5);
     totalProcessed += stage5.processed;
     totalFailed += stage5.failed;
 
     // Stage 6: Moves + pokemon_moves junctions
-    const stage6 = await syncMoves(junctions, onProgress);
+    const stage6 = await syncMoves(junctions, onProgress, refresh);
     stages.push(stage6);
     totalProcessed += stage6.processed;
     totalFailed += stage6.failed;

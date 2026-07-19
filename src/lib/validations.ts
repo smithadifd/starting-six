@@ -13,6 +13,11 @@ export const syncTriggerSchema = z.object({
   type: z.enum(['pokeapi']),
 });
 
+export const updateSyncScheduleSchema = z.object({
+  enabled: z.boolean(),
+  frequency: z.enum(['weekly', 'monthly']),
+});
+
 export const setupSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email().max(255),

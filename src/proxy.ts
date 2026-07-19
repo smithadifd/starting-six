@@ -6,6 +6,7 @@ const DEMO_MODE = process.env.DEMO_MODE === 'true';
 /** Endpoints blocked in demo mode (method + path prefix) */
 const DEMO_BLOCKED: { method: string; prefix: string }[] = [
   { method: 'POST', prefix: '/api/sync' },
+  { method: 'PUT', prefix: '/api/sync/schedule' },
   { method: 'PUT', prefix: '/api/settings' },
   { method: 'POST', prefix: '/api/setup' },
 ];

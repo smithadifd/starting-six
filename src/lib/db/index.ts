@@ -139,6 +139,7 @@ function ensureSchema(sqlite: BetterSqlite3.Database) {
     CREATE TABLE IF NOT EXISTS sync_log (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       source TEXT NOT NULL,
+      trigger TEXT NOT NULL DEFAULT 'manual',
       status TEXT NOT NULL,
       items_processed INTEGER DEFAULT 0,
       items_attempted INTEGER DEFAULT 0,
@@ -146,6 +147,24 @@ function ensureSchema(sqlite: BetterSqlite3.Database) {
       error_message TEXT,
       started_at TEXT NOT NULL DEFAULT (datetime('now')),
       completed_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS sync_schedule (
+      id INTEGER PRIMARY KEY,
+      enabled INTEGER NOT NULL DEFAULT 0,
+      frequency TEXT NOT NULL DEFAULT 'weekly',
+      last_attempt_at TEXT,
+      last_attempt_status TEXT,
+      last_success_at TEXT,
+      attempts_today INTEGER NOT NULL DEFAULT 0,
+      attempts_today_date TEXT,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS sync_lock (
+      id INTEGER PRIMARY KEY,
+      claimed_by TEXT,
+      claimed_at TEXT
     );
 
     -- Better Auth tables (snake_case columns, integer timestamps)

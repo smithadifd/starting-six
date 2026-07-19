@@ -89,14 +89,19 @@ export async function syncSpecies(
 /**
  * Stage 4: Fetch pokemon form details and insert into DB.
  * Returns junction data for stages 5-6.
+ * When `refresh` is true, skips the "already populated" short-circuit and
+ * UPSERTs by `pokeapiId` instead of insert-only — the `pokemon.id` primary
+ * key is preserved across the update, so `team_members.pokemon_id` foreign
+ * keys never dangle.
  */
 export async function syncPokemonForms(
   speciesMap: Map<number, SpeciesMetadata>,
   onProgress: ProgressCallback,
+  refresh = false,
 ): Promise<{ result: StageResult; junctions: PokemonJunctionData[] }> {
   const db = getDb();
   const existing = db.select({ count: sql<number>`count(*)` }).from(pokemon).get()?.count ?? 0;
-  if (existing > 0) {
+  if (existing > 0 && !refresh) {
     return {
       result: { stage: 4, name: 'Pokémon Forms', processed: existing, failed: 0, skipped: true },
       junctions: [],
@@ -154,33 +159,42 @@ export async function syncPokemonForms(
       const spDef = extractStatValue(poke.stats, 'special-defense');
       const spd = extractStatValue(poke.stats, 'speed');
 
-      db.insert(pokemon)
-        .values({
-          pokeapiId: poke.id,
-          speciesId,
-          slug: poke.name,
-          name: displayName,
-          speciesName: species.englishName,
-          formName: actualFormName,
-          isDefault,
-          typeOne,
-          typeTwo,
-          statHp: hp,
-          statAtk: atk,
-          statDef: def,
-          statSpAtk: spAtk,
-          statSpDef: spDef,
-          statSpd: spd,
-          bst: hp + atk + def + spAtk + spDef + spd,
-          spriteDefault: poke.sprites.front_default,
-          spriteShiny: poke.sprites.front_shiny,
-          generation: species.generation,
-          isLegendary: species.isLegendary,
-          isMythical: species.isMythical,
-          isBaby: species.isBaby,
-        })
-        .onConflictDoNothing()
-        .run();
+      const values = {
+        pokeapiId: poke.id,
+        speciesId,
+        slug: poke.name,
+        name: displayName,
+        speciesName: species.englishName,
+        formName: actualFormName,
+        isDefault,
+        typeOne,
+        typeTwo,
+        statHp: hp,
+        statAtk: atk,
+        statDef: def,
+        statSpAtk: spAtk,
+        statSpDef: spDef,
+        statSpd: spd,
+        bst: hp + atk + def + spAtk + spDef + spd,
+        spriteDefault: poke.sprites.front_default,
+        spriteShiny: poke.sprites.front_shiny,
+        generation: species.generation,
+        isLegendary: species.isLegendary,
+        isMythical: species.isMythical,
+        isBaby: species.isBaby,
+      };
+      const insert = db.insert(pokemon).values(values);
+      if (refresh) {
+        // Never touches `id` — team_members.pokemon_id FKs stay valid across a refresh.
+        insert
+          .onConflictDoUpdate({
+            target: pokemon.pokeapiId,
+            set: { ...values, updatedAt: sql`(datetime('now'))` },
+          })
+          .run();
+      } else {
+        insert.onConflictDoNothing().run();
+      }
 
       // Collect junction data
       junctions.push({
