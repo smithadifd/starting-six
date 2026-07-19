@@ -267,10 +267,16 @@ export function recordSyncAttempt(status: SyncAttemptStatus, now: Date = new Dat
 export type SyncLockSource = 'manual' | 'scheduled';
 
 // A claim older than 30 minutes is treated as abandoned (e.g. container
-// restarted mid-sync) — a full sync normally finishes in 5-15 minutes per
-// docs/architecture/sync-pipeline.md, so 30 is a generous margin. Kept as a
-// plain SQL literal below rather than parameterized: it's a fixed constant,
-// not user input.
+// restarted mid-sync). docs/getting-started/first-run.md documents a full
+// sync (same volume of work a refresh=true scheduled run does) as taking
+// roughly 15-25 minutes on a typical connection, so 30 minutes is a margin
+// of only ~5 minutes over the documented upper bound — not "generous" — and
+// a slow network or a run that hits its retry budget (up to 3 retries with
+// 1s/2s/4s backoff per failed request) could plausibly exceed it. If a
+// scheduled sync starts stealing its own lock in practice, widen this
+// timeout rather than assume the 30-minute margin is safe headroom. Kept as
+// a plain SQL literal below rather than parameterized: it's a fixed
+// constant, not user input.
 
 /**
  * Atomically claims the sync lock for `source`. Returns true if the claim
