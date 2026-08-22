@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REMOTE="synology"
-REMOTE_PATH="/volume3/docker/starting-six"
-REMOTE_DOCKER_PATH="export PATH=/usr/local/bin:/usr/syno/bin:\$PATH"
-REPO_URL="git@github.com:smithadifd/starting-six.git"
-COMPOSE_FILE="docker-compose.prod.yml"
-APP_PORT=3002
+# Deploy target — moved off the Synology onto recomputer 2026-08-22.
+# Overridable so the NAS remains reachable for a rollback: set DEPLOY_REMOTE
+# and DEPLOY_DOCKER_PATH (the NAS needs a PATH preamble; recomputer does not).
+REMOTE="${DEPLOY_REMOTE:-recomputer}"
+REMOTE_PATH="${DEPLOY_REMOTE_PATH:-/home/fivefootfive/starting-six}"
+REMOTE_DOCKER_PATH="${DEPLOY_DOCKER_PATH-}"
+REPO_URL="${DEPLOY_REPO_URL:-https://github.com/smithadifd/starting-six.git}"
+COMPOSE_FILE="${DEPLOY_COMPOSE_FILE:-docker-compose.prod.yml}"
+APP_PORT="${DEPLOY_APP_PORT:-3002}"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
