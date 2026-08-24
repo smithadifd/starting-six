@@ -51,7 +51,7 @@
     "drizzle-kit": "^0.31.10",
     "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^16.3.0",
+    "eslint-config-next": "^16.3.2",
     "jsdom": "^30.0.1",
     "postcss": "^8.5.25",
     "serwist": "^9.5.12",
