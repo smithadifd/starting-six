@@ -9,6 +9,7 @@ import {
   addTeamMemberSchema,
   updateTeamMemberSchema,
   syncTriggerSchema,
+  updateSyncScheduleSchema,
 } from './validations';
 
 // ===========================================
@@ -223,5 +224,24 @@ describe('updateTeamMemberSchema', () => {
 
   it('moveOneId nullable (null accepted)', () => {
     expect(updateTeamMemberSchema.safeParse({ moveOneId: null }).success).toBe(true);
+  });
+});
+
+describe('updateSyncScheduleSchema', () => {
+  it.each(['weekly', 'monthly'])('accepts %s', frequency => {
+    expect(updateSyncScheduleSchema.safeParse({ enabled: true, frequency }).success).toBe(true);
+  });
+
+  it.each(['daily', 'yearly', ''])('rejects frequency %j', frequency => {
+    expect(updateSyncScheduleSchema.safeParse({ enabled: true, frequency }).success).toBe(false);
+  });
+
+  it('requires a boolean enabled value', () => {
+    expect(updateSyncScheduleSchema.safeParse({ enabled: 'true', frequency: 'weekly' }).success).toBe(false);
+  });
+
+  it('requires both fields', () => {
+    expect(updateSyncScheduleSchema.safeParse({ frequency: 'weekly' }).success).toBe(false);
+    expect(updateSyncScheduleSchema.safeParse({ enabled: true }).success).toBe(false);
   });
 });
