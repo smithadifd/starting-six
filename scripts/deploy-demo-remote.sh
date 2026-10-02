@@ -41,6 +41,14 @@ while IFS= read -r dir; do
     fi
 done < <(docker ps --format '{{.Label "com.docker.compose.project.working_dir"}}')
 
+restart_running_demos() {
+    local dir
+    for dir in "${running_demos[@]}"; do
+        echo "Restarting $dir"
+        (cd "$dir" && docker compose -f "$compose_file" --env-file .env.demo up -d)
+    done
+}
+
 restart_other_demos() {
     local dir
     for dir in "${running_demos[@]}"; do
@@ -54,7 +62,7 @@ for dir in "${running_demos[@]}"; do
     echo "Stopping $dir"
     (cd "$dir" && docker compose -f "$compose_file" --env-file .env.demo stop)
 done
-trap 'restart_other_demos' EXIT
+trap 'restart_running_demos' EXIT
 
 docker compose -f "$compose_file" --env-file .env.demo build
 docker compose -f "$compose_file" --env-file .env.demo up -d
