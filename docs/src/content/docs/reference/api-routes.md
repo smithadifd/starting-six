@@ -110,7 +110,7 @@ Handles three distinct operations in one route, disambiguated by the request bod
 
 - Bench action (`{ action: "bench" }`) — moves an active member to the bench
 - Activate action (`{ action: "activate", slot?: number }`) — optional slot is an integer from 1 to 6; returns 400 if no slots are available
-- General update — optional nullable nickname (at most 50 characters), positive integer ability and move IDs, and one of the 18 Pokémon tera types
+- General update — optional nullable nickname (at most 50 characters), ability and all four move IDs (positive integers or null), and tera type (one of the 18 Pokémon types or null)
 
 Both path IDs must parse as integers. Invalid ID, JSON, or fields return 400; a missing or inaccessible run or member returns 404; caught failures return 500. DELETE takes no body and returns `{ data: { deleted: true } }` with the same ID, ownership, and failure statuses.
 
@@ -126,6 +126,7 @@ Runs four pure-function analysis passes over the active team members and returns
 - `offense` — move type coverage
 - `roles` — stat-based role classification (e.g., physical sweeper, wall)
 - `abilities` — highlights of notable abilities
+- `teamSize` — number of active team members analyzed
 
 The ID must parse as an integer; invalid, missing, or inaccessible playthroughs return 404. An empty active team returns 400. Only active members are analyzed. Unexpected analysis errors are handled by the framework. See [Analysis internals](/starting-six/architecture/analysis-internals/).
 
