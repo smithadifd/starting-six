@@ -26,7 +26,8 @@ function stub(file: string, body: string) {
 }
 
 function runDeploy(options: { failedHealth?: boolean; previousImage?: boolean; failedBuild?: boolean;
-  failedStop?: boolean; failedRestart?: boolean; failedPs?: boolean; changedImageName?: boolean } = {}) {
+  failedStop?: boolean; failedRestart?: boolean; failedPs?: boolean; changedImageName?: boolean;
+  failedRollbackTag?: boolean; failedRollbackUp?: boolean } = {}) {
   const dir = scratch();
   const bin = path.join(dir, 'bin');
   const demos = path.join(dir, 'demos');
@@ -47,6 +48,8 @@ function runDeploy(options: { failedHealth?: boolean; previousImage?: boolean; f
 printf 'docker %s\\n' "$*" >> "$COMMAND_LOG"
 printf 'cwd %s command %s\\n' "$PWD" "$*" >> "$COMMAND_LOG"
 case " $* " in
+  *' tag sha256:previous starting-six-app '*) if [[ "$FAIL_ROLLBACK_TAG" == 1 ]]; then exit 46; fi ;;
+  *' up -d --no-build --force-recreate '*) if [[ "$FAIL_ROLLBACK_UP" == 1 ]]; then exit 47; fi ;;
   *' ps -q app '*) if [[ -f "$STATE/updated" ]]; then echo new-container; else echo prior-container; fi ;;
   *' inspect --format {{.Image}} prior-container '*) if [[ "$HAS_IMAGE" == 1 ]]; then echo sha256:previous; fi ;;
   *' inspect --format {{.Config.Image}} prior-container '*) echo starting-six-app ;;
@@ -80,6 +83,8 @@ printf 'curl %s\\n' "$*" >> "$COMMAND_LOG"
       FAIL_RESTART: options.failedRestart ? '1' : '0',
       FAIL_PS: options.failedPs ? '1' : '0',
       CHANGE_IMAGE: options.changedImageName ? '1' : '0',
+      FAIL_ROLLBACK_TAG: options.failedRollbackTag ? '1' : '0',
+      FAIL_ROLLBACK_UP: options.failedRollbackUp ? '1' : '0',
     },
   });
   return { result, log: readFileSync(log, 'utf8'), target, other, third, dormant, nested, unrelated };
@@ -196,4 +201,20 @@ test('prints a manual rollback when the previous image is unavailable', () => {
   expect(result.status).not.toBe(0);
   expect(result.stderr).toContain(`Manual rollback: cd ${target} && git reset --hard previous-commit && docker compose`);
   expect(log).not.toContain('docker tag');
+});
+
+test('prints manual rollback when tagging the previous image fails', () => {
+  const { result, log, target } = runDeploy({ failedHealth: true, failedRollbackTag: true });
+  expect(result.status).not.toBe(0);
+  expect(log).toContain('docker tag sha256:previous starting-six-app');
+  expect(log).not.toContain('up -d --no-build --force-recreate');
+  expect(result.stderr).toContain(`Manual rollback: cd ${target} && git reset --hard previous-commit && docker compose -f docker-compose.demo.yml --env-file .env.demo up -d --build`);
+});
+
+test('prints manual rollback when restarting the previous image fails', () => {
+  const { result, log, target } = runDeploy({ failedHealth: true, failedRollbackUp: true });
+  expect(result.status).not.toBe(0);
+  expect(log).toContain('docker tag sha256:previous starting-six-app');
+  expect(log).toContain('up -d --no-build --force-recreate');
+  expect(result.stderr).toContain(`Manual rollback: cd ${target} && git reset --hard previous-commit && docker compose -f docker-compose.demo.yml --env-file .env.demo up -d --build`);
 });

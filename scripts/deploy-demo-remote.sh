@@ -115,13 +115,21 @@ current_image_name=
 if [[ -n "$current_container" ]]; then
     current_image_name=$(docker inspect --format '{{.Config.Image}}' "$current_container" || true)
 fi
+print_manual_rollback() {
+    if [[ -n "$previous_commit" ]]; then
+        echo "Manual rollback: cd $remote_path && git reset --hard $previous_commit && docker compose -f $compose_file --env-file .env.demo up -d --build" >&2
+    else
+        echo "Manual rollback: cd $remote_path && docker compose -f $compose_file --env-file .env.demo down" >&2
+    fi
+}
 if [[ -n "$previous_image" && -n "$previous_image_name" && "$previous_image_name" == "$current_image_name" ]]; then
     echo "Restoring previous image $previous_image" >&2
-    docker tag "$previous_image" "$previous_image_name"
-    docker compose -f "$compose_file" --env-file .env.demo up -d --no-build --force-recreate
-elif [[ -n "$previous_commit" ]]; then
-    echo "Manual rollback: cd $remote_path && git reset --hard $previous_commit && docker compose -f $compose_file --env-file .env.demo up -d --build" >&2
+    if ! docker tag "$previous_image" "$previous_image_name"; then
+        print_manual_rollback
+    elif ! docker compose -f "$compose_file" --env-file .env.demo up -d --no-build --force-recreate; then
+        print_manual_rollback
+    fi
 else
-    echo "Manual rollback: cd $remote_path && docker compose -f $compose_file --env-file .env.demo down" >&2
+    print_manual_rollback
 fi
 exit 1
