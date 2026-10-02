@@ -6,12 +6,18 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
+# better-sqlite3 builds from source during install here.
+# Its native build needs python3 and a C++ toolchain.
+RUN apk add --no-cache python3 make g++
 RUN npm ci --only=production
 
 # --- Builder ---
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
+# better-sqlite3 builds from source during install here.
+# Its native build needs python3 and a C++ toolchain.
+RUN apk add --no-cache python3 make g++
 RUN npm ci
 COPY . .
 RUN mkdir -p /app/data
