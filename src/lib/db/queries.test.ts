@@ -10,6 +10,7 @@ vi.mock('@/lib/db', () => ({
 
 import { getDb } from '@/lib/db';
 import {
+  getPokemon,
   getNextTeamSlot,
   getSyncSchedule,
   setSyncSchedule,
@@ -29,6 +30,107 @@ function getSqlite(db: ReturnType<typeof createTestDb>): BetterSqlite3.Database 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (db as any).$client;
 }
+
+describe('getPokemon', () => {
+  let sqlite: BetterSqlite3.Database;
+
+  beforeEach(() => {
+    const db = createTestDb();
+    sqlite = getSqlite(db);
+    vi.mocked(getDb).mockReturnValue(db as ReturnType<typeof getDb>);
+
+    sqlite.exec(`
+      INSERT INTO version_groups (id, pokeapi_id, slug, name, generation) VALUES
+        (1, 1, 'first', 'First', 1), (2, 2, 'second', 'Second', 2);
+      INSERT INTO pokemon (pokeapi_id, species_id, slug, name, species_name, type_one, type_two, generation) VALUES
+        (1, 1, 'alpha-seed', 'Alpha Seed', 'Alpha Seed', 'grass', 'poison', 1),
+        (2, 2, 'alpha-spark', 'Alpha Spark', 'Alpha Spark', 'electric', NULL, 1),
+        (3, 3, 'alpha-grove', 'Alpha Grove', 'Alpha Grove', 'normal', 'grass', 1),
+        (4, 4, 'alpha-bloom', 'Alpha Bloom', 'Alpha Bloom', 'grass', 'fairy', 2),
+        (5, 5, 'beta-seed', 'Beta Seed', 'Beta Seed', 'grass', NULL, 1),
+        (6, 6, 'beta-flame', 'Beta Flame', 'Beta Flame', 'fire', NULL, 3),
+        (7, 7, 'gamma-seed', 'Gamma Seed', 'Gamma Seed', 'grass', NULL, 1);
+      INSERT INTO game_pokemon (version_group_id, species_id, dex_number) VALUES
+        (1, 1, 1), (1, 2, 2), (1, 5, 5), (1, 7, 7),
+        (2, 3, 3), (2, 4, 4), (2, 6, 6);
+    `);
+  });
+
+  const ids = (rows: ReturnType<typeof getPokemon>['pokemon']) => rows.map((row) => row.pokeapiId);
+
+  it('filters by a name substring', () => {
+    const result = getPokemon({ search: 'Seed' });
+    expect(ids(result.pokemon)).toEqual([1, 5, 7]);
+    expect(result.total).toBe(3);
+  });
+
+  it('matches both primary and secondary types', () => {
+    const result = getPokemon({ typeFilter: 'grass' });
+    expect(ids(result.pokemon)).toEqual([1, 3, 4, 5, 7]);
+    expect(result.total).toBe(5);
+  });
+
+  it('filters by generation', () => {
+    const result = getPokemon({ generation: 1 });
+    expect(ids(result.pokemon)).toEqual([1, 2, 3, 5, 7]);
+    expect(result.total).toBe(5);
+  });
+
+  it('filters by version group species membership', () => {
+    const result = getPokemon({ versionGroupId: 1 });
+    expect(ids(result.pokemon)).toEqual([1, 2, 5, 7]);
+    expect(result.total).toBe(4);
+  });
+
+  it('returns no matches for a version group with no species', () => {
+    sqlite.exec("INSERT INTO version_groups (id, pokeapi_id, slug, name, generation) VALUES (3, 3, 'empty', 'Empty', 3)");
+    expect(getPokemon({ versionGroupId: 3 })).toMatchObject({ pokemon: [], total: 0 });
+  });
+
+  it('intersects search, type, and generation filters', () => {
+    const result = getPokemon({ search: 'Alpha', typeFilter: 'grass', generation: 1 });
+    expect(ids(result.pokemon)).toEqual([1, 3]);
+    expect(result.total).toBe(2);
+  });
+
+  it('counts all matches while returning the requested page slice in PokéAPI order', () => {
+    const result = getPokemon({ typeFilter: 'grass', page: 2, pageSize: 2 });
+    expect(ids(result.pokemon)).toEqual([4, 5]);
+    expect(result.total).toBe(5);
+  });
+
+  it('returns the first page', () => {
+    const result = getPokemon({ typeFilter: 'grass', page: 1, pageSize: 2 });
+    expect(ids(result.pokemon)).toEqual([1, 3]);
+    expect(result.total).toBe(5);
+  });
+
+  it('returns the last partial page', () => {
+    const result = getPokemon({ typeFilter: 'grass', page: 3, pageSize: 2 });
+    expect(ids(result.pokemon)).toEqual([7]);
+    expect(result.total).toBe(5);
+  });
+
+  it('returns an empty page beyond the end without losing the total', () => {
+    const pastEnd = getPokemon({ typeFilter: 'grass', page: 4, pageSize: 2 });
+    expect(pastEnd.pokemon).toEqual([]);
+    expect(pastEnd.total).toBe(5);
+  });
+
+  it('defaults to 48 results per page', () => {
+    const insert = sqlite.prepare(
+      'INSERT INTO pokemon (pokeapi_id, species_id, slug, name, species_name, type_one) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    for (let id = 8; id <= 49; id++) {
+      insert.run(id, id, `extra-${id}`, `Extra ${id}`, `Extra ${id}`, 'water');
+    }
+
+    const first = getPokemon();
+    expect(ids(first.pokemon)).toEqual(Array.from({ length: 48 }, (_, index) => index + 1));
+    expect(first.total).toBe(49);
+    expect(ids(getPokemon({ page: 2 }).pokemon)).toEqual([49]);
+  });
+});
 
 describe('getNextTeamSlot', () => {
   let db: ReturnType<typeof createTestDb>;
