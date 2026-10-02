@@ -1,29 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Deploy to the demo host. Side effects: may update the SSH security group,
+# fetch main, clone/reset the remote checkout, stop running demo stacks, build
+# and replace this app's container, then restart the recorded demo stacks.
+# --dry-run prints the plan without network, Git, Docker, or host changes.
 REMOTE="demo"
 REMOTE_PATH="/opt/demos/starting-six"
 REPO_URL="https://github.com/smithadifd/starting-six.git"
-COMPOSE_FILE="docker-compose.demo.yml"
 APP_PORT=3012
 INFRA_DIR="${DEMO_INFRA_DIR:-$HOME/demo-infra}"
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
-# --- Ensure SSH access (auto-update security group if IP changed) ---
 ensure_ssh_access() {
     if [ ! -f "$INFRA_DIR/terraform.tfvars" ]; then
         warn "demo-infra not found at $INFRA_DIR — skipping IP check"
         return 0
     fi
-
     local current_ip tfvars_ip
     current_ip=$(curl -s --max-time 5 ifconfig.me)
     tfvars_ip=$(grep 'admin_ip' "$INFRA_DIR/terraform.tfvars" | sed 's/.*"\(.*\)".*/\1/')
-
     if [[ "$current_ip" != "$tfvars_ip" ]]; then
         warn "Admin IP changed ($tfvars_ip -> $current_ip). Updating security group..."
         (cd "$INFRA_DIR" && ./update-ip.sh)
@@ -55,91 +56,21 @@ preflight() {
     info "Pre-flight checks passed. Deploying commit: ${local_hash:0:8}"
 }
 
-deploy() {
-    info "Connecting to EC2 demo server..."
-    ssh "$REMOTE" bash -s <<REMOTE_SCRIPT
-set -euo pipefail
-
-if [ ! -d "$REMOTE_PATH/.git" ]; then
-    echo "Cloning repository..."
-    sudo mkdir -p "$REMOTE_PATH"
-    sudo chown ubuntu:ubuntu "$REMOTE_PATH"
-    git clone "$REPO_URL" "$REMOTE_PATH"
-else
-    echo "Pulling latest changes..."
-    cd "$REMOTE_PATH"
-    git fetch origin main
-    git reset --hard origin/main
-fi
-
-cd "$REMOTE_PATH"
-echo "Now at commit: \$(git rev-parse --short HEAD)"
-
-if [ ! -f ".env.demo" ]; then
-    echo "ERROR: .env.demo not found at $REMOTE_PATH/.env.demo"
-    echo "Create it with: BETTER_AUTH_SECRET=<secret>"
-    exit 1
-fi
-
-echo ""
-echo "--- Stopping all containers to free memory for build ---"
-docker stop \$(docker ps -q) 2>/dev/null || true
-
-echo "--- Building Docker image ---"
-docker compose -f "$COMPOSE_FILE" --env-file .env.demo build
-
-echo "--- Starting containers ---"
-docker compose -f "$COMPOSE_FILE" --env-file .env.demo up -d
-
-echo ""
-echo "--- Restarting other demo services ---"
-for dir in /opt/demos/*/; do
-    [ "\$dir" = "$REMOTE_PATH/" ] && continue
-    if [ -f "\$dir/docker-compose.demo.yml" ] && [ -f "\$dir/.env.demo" ]; then
-        echo "Restarting \$(basename \$dir)..."
-        (cd "\$dir" && docker compose -f docker-compose.demo.yml --env-file .env.demo up -d) || true
-    fi
-done
-
-echo ""
-echo "--- Container status ---"
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-REMOTE_SCRIPT
-
-    info "Deploy complete."
-}
-
-healthcheck() {
-    info "Running health check..."
-    local max_attempts=10 attempt=1
-
-    while [ $attempt -le $max_attempts ]; do
-        if ssh "$REMOTE" "curl -sf --max-time 5 http://localhost:${APP_PORT}/api/health" > /dev/null 2>&1; then
-            info "Health check passed"
-            return 0
-        fi
-        warn "Attempt $attempt/$max_attempts - waiting..."
-        sleep 3
-        ((attempt++))
-    done
-
-    error "Health check failed after $max_attempts attempts."
-    return 1
-}
-
 main() {
-    echo ""
-    echo "========================================="
-    echo "  Starting Six - Deploy to Demo Server"
-    echo "========================================="
-    echo ""
+    if [[ "${1:-}" == "--dry-run" && $# -eq 1 ]]; then
+        info "Dry run: check SSH access and main, then deploy $REPO_URL to $REMOTE:$REMOTE_PATH."
+        info "Record and stop only running demo stacks; build and start Starting Six; restart the recorded stacks."
+        info "Check http://localhost:$APP_PORT/api/health with backoff; restore the previous image or print a manual rollback command on failure."
+        return 0
+    fi
+    if (( $# != 0 )); then
+        error "Usage: $0 [--dry-run]"
+        return 2
+    fi
     ensure_ssh_access
     preflight
-    deploy
-    healthcheck
-    echo ""
+    ssh "$REMOTE" bash -s -- "$REMOTE_PATH" "$REPO_URL" "$APP_PORT" < "$SCRIPT_DIR/deploy-demo-remote.sh"
     info "Deployment successful! App available at: https://starting-six.smithadifd.com"
-    echo ""
 }
 
 main "$@"
