@@ -25,17 +25,19 @@ function stub(file: string, body: string) {
   chmodSync(file, 0o755);
 }
 
-function runDeploy(options: { failedHealth?: boolean; previousImage?: boolean; failedBuild?: boolean } = {}) {
+function runDeploy(options: { failedHealth?: boolean; previousImage?: boolean; failedBuild?: boolean;
+  failedStop?: boolean; failedRestart?: boolean; changedImageName?: boolean } = {}) {
   const dir = scratch();
   const bin = path.join(dir, 'bin');
   const demos = path.join(dir, 'demos');
   const target = path.join(demos, 'starting-six');
   const other = path.join(demos, 'other');
+  const third = path.join(demos, 'third');
   const dormant = path.join(demos, 'dormant');
   const nested = path.join(demos, 'nested', 'child');
   const unrelated = path.join(dir, 'unrelated');
   mkdirSync(bin);
-  for (const project of [target, other, dormant, nested, unrelated]) {
+  for (const project of [target, other, third, dormant, nested, unrelated]) {
     mkdirSync(path.join(project, '.git'), { recursive: true });
     writeFileSync(path.join(project, 'docker-compose.demo.yml'), '');
     writeFileSync(path.join(project, '.env.demo'), '');
@@ -45,16 +47,20 @@ function runDeploy(options: { failedHealth?: boolean; previousImage?: boolean; f
 printf 'docker %s\\n' "$*" >> "$COMMAND_LOG"
 printf 'cwd %s command %s\\n' "$PWD" "$*" >> "$COMMAND_LOG"
 case " $* " in
-  *' ps -q app '*) echo prior-container ;;
-  *' inspect '*) if [[ "$HAS_IMAGE" == 1 ]]; then echo sha256:previous; fi ;;
-  *' config --images '*) echo starting-six-app ;;
-  *' ps --format '*) printf '%s\\n' "$TARGET" "$OTHER" "$OTHER" "$NESTED" "$UNRELATED" ;;
+  *' ps -q app '*) if [[ -f "$STATE/updated" ]]; then echo new-container; else echo prior-container; fi ;;
+  *' inspect --format {{.Image}} prior-container '*) if [[ "$HAS_IMAGE" == 1 ]]; then echo sha256:previous; fi ;;
+  *' inspect --format {{.Config.Image}} prior-container '*) echo starting-six-app ;;
+  *' inspect --format {{.Config.Image}} new-container '*) if [[ "$CHANGE_IMAGE" == 1 ]]; then echo renamed-app; else echo starting-six-app; fi ;;
+  *' ps --format '*) printf '%s\\n' "$TARGET" "$OTHER" "$THIRD" "$OTHER" "$NESTED" "$UNRELATED" ;;
   *' ps -a --format '*) printf '%s\\n' "$TARGET" "$OTHER" "$DORMANT" "$NESTED" "$UNRELATED" ;;
+  *' stop '*) count=$(cat "$STATE/stops" 2>/dev/null || echo 0); count=$((count + 1)); echo "$count" > "$STATE/stops"; if [[ "$FAIL_STOP" == 1 && "$count" == 2 ]]; then exit 43; fi ;;
+  *' up -d '*) if [[ "$FAIL_RESTART" == 1 && "$PWD" == "$OTHER" ]]; then exit 44; fi ;;
   *' build '*) if [[ "$FAIL_BUILD" == 1 ]]; then exit 42; fi ;;
 esac`);
   stub(path.join(bin, 'git'), `
 printf 'git %s\\n' "$*" >> "$COMMAND_LOG"
-if [[ "$*" == 'rev-parse HEAD' ]]; then echo previous-commit; fi`);
+if [[ "$*" == 'rev-parse HEAD' ]]; then echo previous-commit; fi
+if [[ "$*" == 'reset --hard origin/main' ]]; then touch "$STATE/updated"; fi`);
   stub(path.join(bin, 'curl'), `
 printf 'curl %s\\n' "$*" >> "$COMMAND_LOG"
 [[ "$FAIL_HEALTH" != 1 ]]`);
@@ -65,22 +71,30 @@ printf 'curl %s\\n' "$*" >> "$COMMAND_LOG"
     env: {
       ...process.env,
       PATH: `${bin}${path.delimiter}${process.env.PATH}`,
-      COMMAND_LOG: log, TARGET: target, OTHER: other, DORMANT: dormant,
+      COMMAND_LOG: log, STATE: dir, TARGET: target, OTHER: other, THIRD: third, DORMANT: dormant,
       NESTED: nested, UNRELATED: unrelated,
       FAIL_HEALTH: options.failedHealth ? '1' : '0',
       HAS_IMAGE: options.previousImage === false ? '0' : '1',
       FAIL_BUILD: options.failedBuild ? '1' : '0',
+      FAIL_STOP: options.failedStop ? '1' : '0',
+      FAIL_RESTART: options.failedRestart ? '1' : '0',
+      CHANGE_IMAGE: options.changedImageName ? '1' : '0',
     },
   });
-  return { result, log: readFileSync(log, 'utf8'), target, other, dormant, nested, unrelated };
+  return { result, log: readFileSync(log, 'utf8'), target, other, third, dormant, nested, unrelated };
 }
 
 test('stops and restarts only running demo stacks', () => {
-  const { result, log, target, other, dormant, nested, unrelated } = runDeploy();
+  const { result, log, target, other, third, dormant, nested, unrelated } = runDeploy();
   expect(result.status, result.stderr).toBe(0);
-  expect(log.match(/docker compose -f docker-compose.demo.yml --env-file .env.demo stop/g)).toHaveLength(2);
+  expect(log.match(/docker compose -f docker-compose.demo.yml --env-file .env.demo stop/g)).toHaveLength(3);
+  expect(log).not.toMatch(/^docker (stop|kill|rm)(?:\s|$)/m);
+  for (const project of [target, other, third]) {
+    expect(log).toContain(`cwd ${project} command compose -f docker-compose.demo.yml --env-file .env.demo stop`);
+  }
   expect(result.stdout).toContain(`Stopping ${target}`);
   expect(result.stdout).toContain(`Stopping ${other}`);
+  expect(result.stdout).toContain(`Stopping ${third}`);
   expect(result.stdout).not.toContain(`Stopping ${dormant}`);
   expect(result.stdout).not.toContain(`Stopping ${nested}`);
   expect(result.stdout).not.toContain(`Stopping ${unrelated}`);
@@ -89,16 +103,36 @@ test('stops and restarts only running demo stacks', () => {
 });
 
 test('restores recorded running stacks after a failed build', () => {
-  const { result, log, target, other, dormant } = runDeploy({ failedBuild: true });
+  const { result, log, target, other, third, dormant } = runDeploy({ failedBuild: true });
   expect(result.status).not.toBe(0);
   expect(result.stdout).toContain(`Stopping ${target}`);
   expect(result.stdout).toContain(`Stopping ${other}`);
   expect(result.stdout).toContain(`Restarting ${target}`);
   expect(result.stdout).toContain(`Restarting ${other}`);
+  expect(result.stdout).toContain(`Restarting ${third}`);
   expect(result.stdout).not.toContain(`Restarting ${dormant}`);
   expect(log).toContain(`cwd ${target} command compose -f docker-compose.demo.yml --env-file .env.demo up -d`);
   expect(log).toContain(`cwd ${other} command compose -f docker-compose.demo.yml --env-file .env.demo up -d`);
   expect(log).not.toContain(`cwd ${dormant} command compose -f docker-compose.demo.yml --env-file .env.demo up -d`);
+});
+
+test('restores all recorded stacks when a later stop fails', () => {
+  const { result, log, target, other, third } = runDeploy({ failedStop: true });
+  expect(result.status).not.toBe(0);
+  expect(result.stdout).toContain(`Stopping ${target}`);
+  expect(result.stdout).toContain(`Stopping ${other}`);
+  expect(result.stdout).not.toContain(`Stopping ${third}`);
+  for (const project of [target, other, third]) {
+    expect(log).toContain(`cwd ${project} command compose -f docker-compose.demo.yml --env-file .env.demo up -d`);
+  }
+});
+
+test('continues restarting other demos after one restart fails', () => {
+  const { result, log, target, other, third } = runDeploy({ failedRestart: true });
+  expect(result.status).not.toBe(0);
+  expect(result.stderr).toContain(`Failed to restart ${other}`);
+  expect(log).toContain(`cwd ${third} command compose -f docker-compose.demo.yml --env-file .env.demo up -d`);
+  expect(result.stdout.indexOf(`Restarting ${third}`)).toBeLessThan(result.stdout.indexOf(`Restarting ${target}`));
 });
 
 test('failed health reports URL, logs, backoff, and restores the previous image', () => {
@@ -116,12 +150,33 @@ test('failed health reports URL, logs, backoff, and restores the previous image'
 
 test('dry run has no side effects', () => {
   const dir = scratch();
+  const bin = path.join(dir, 'bin');
+  mkdirSync(bin);
+  const log = path.join(dir, 'commands');
+  writeFileSync(log, '');
+  for (const command of ['ssh', 'curl', 'git', 'docker']) {
+    stub(path.join(bin, command), `printf '%s %s\\n' '${command}' "$*" >> "$COMMAND_LOG"`);
+  }
+  const env = { ...process.env, PATH: `${bin}${path.delimiter}${process.env.PATH}`, COMMAND_LOG: log };
   const result = spawnSync('bash', [process.env.DEPLOY_LOCAL_SCRIPT ?? localScript, '--dry-run'], {
-    cwd: dir, encoding: 'utf8',
+    cwd: dir, encoding: 'utf8', env,
   });
   expect(result.status, result.stderr).toBe(0);
   expect(result.stdout).toContain('Dry run:');
   expect(result.stdout).toContain('http://localhost:3012/api/health');
+  expect(readFileSync(log, 'utf8')).toBe('');
+  const invalid = spawnSync('bash', [process.env.DEPLOY_LOCAL_SCRIPT ?? localScript, '--dry-run', 'foo'], {
+    cwd: dir, encoding: 'utf8', env,
+  });
+  expect(invalid.status).toBe(2);
+  expect(readFileSync(log, 'utf8')).toBe('');
+});
+
+test('prints manual rollback when the app image name changes', () => {
+  const { result, log, target } = runDeploy({ failedHealth: true, changedImageName: true });
+  expect(result.status).not.toBe(0);
+  expect(result.stderr).toContain(`Manual rollback: cd ${target} && git reset --hard previous-commit`);
+  expect(log).not.toContain('docker tag');
 });
 
 test('prints a manual rollback when the previous image is unavailable', () => {
