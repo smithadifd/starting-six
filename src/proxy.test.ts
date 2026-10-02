@@ -31,7 +31,9 @@ describe('demo API guard', () => {
   it('allows GET on every blocked mutation path', async () => {
     const proxy = await loadProxy(true);
     for (const path of ['/api/sync', '/api/sync/schedule', '/api/settings', '/api/setup']) {
-      expect(proxy(request(path)).status).toBe(200);
+      const response = proxy(request(path));
+      expect(response.status).toBe(200);
+      expect(response.headers.get('x-middleware-next')).toBe('1');
     }
   });
 });

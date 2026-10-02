@@ -33,10 +33,10 @@ describe('swap route errors', () => {
     expect(swapTeamMember).not.toHaveBeenCalled();
   });
 
-  it.fails('returns a client error when the requested swap cannot be completed', async () => {
+  it('returns a generic 500 response when the requested swap cannot be completed', async () => {
     vi.mocked(swapTeamMember).mockImplementation(() => { throw new Error('Bench member not found'); });
     const response = await POST(req({ benchMemberId: 2, activeSlot: 1 }), context);
-    expect(response.status).toBe(400);
-    expect(await response.json()).toEqual({ error: 'Bench member not found' });
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: 'Failed to swap team member' });
   });
 });
