@@ -13,6 +13,35 @@ const basePoke = {
 };
 
 describe('classifyRole', () => {
+  it.each([
+    ['attack below', { statAtk: 99, statSpd: 90 }, ['Balanced']],
+    ['attack at', { statAtk: 100, statSpd: 90 }, ['Physical Sweeper']],
+    ['attack above', { statAtk: 101, statSpd: 90 }, ['Physical Sweeper']],
+    ['special attack below', { statSpAtk: 99, statSpd: 90 }, ['Balanced']],
+    ['special attack at', { statSpAtk: 100, statSpd: 90 }, ['Special Sweeper']],
+    ['special attack above', { statSpAtk: 101, statSpd: 90 }, ['Special Sweeper']],
+    ['speed below', { statAtk: 100, statSpd: 89 }, ['Balanced']],
+    ['speed at', { statAtk: 100, statSpd: 90 }, ['Physical Sweeper']],
+    ['speed above', { statAtk: 100, statSpd: 91 }, ['Physical Sweeper']],
+    ['HP below', { statDef: 100, statHp: 89 }, ['Support']],
+    ['HP at', { statDef: 100, statHp: 90 }, ['Physical Wall', 'Support']],
+    ['HP above', { statDef: 100, statHp: 91 }, ['Physical Wall', 'Support']],
+    ['defense below', { statDef: 99, statSpDef: 100 }, ['Support']],
+    ['defense at', { statDef: 100, statSpDef: 100 }, ['Tank', 'Support']],
+    ['defense above', { statDef: 101, statSpDef: 100 }, ['Tank', 'Support']],
+    ['special defense below', { statDef: 100, statSpDef: 99 }, ['Support']],
+    ['special defense at', { statDef: 100, statSpDef: 100 }, ['Tank', 'Support']],
+    ['special defense above', { statDef: 100, statSpDef: 101 }, ['Tank', 'Support']],
+    ['low defense below', { statAtk: 100, statDef: 69, statSpDef: 69 }, ['Glass Cannon']],
+    ['low defense at', { statAtk: 100, statDef: 70, statSpDef: 69 }, ['Balanced']],
+    ['low defense above', { statAtk: 100, statDef: 71, statSpDef: 69 }, ['Balanced']],
+    ['low special defense below', { statAtk: 100, statDef: 69, statSpDef: 69 }, ['Glass Cannon']],
+    ['low special defense at', { statAtk: 100, statDef: 69, statSpDef: 70 }, ['Balanced']],
+    ['low special defense above', { statAtk: 100, statDef: 69, statSpDef: 71 }, ['Balanced']],
+  ] as const)('%s threshold', (_name, stats, roles) => {
+    expect(classifyRole({ ...basePoke, ...stats }).roles).toEqual(roles);
+  });
+
   it('Physical Sweeper: high Atk + high Spd, not high SpAtk', () => {
     const result = classifyRole({ ...basePoke, statAtk: 120, statSpd: 95, statSpAtk: 60 });
     expect(result.roles).toContain('Physical Sweeper');
