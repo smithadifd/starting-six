@@ -33,6 +33,10 @@ if [[ ! -f .env.demo ]]; then
 fi
 
 declare -a running_demos=()
+if ! running_projects=$(docker ps --format '{{.Label "com.docker.compose.project.working_dir"}}'); then
+    echo "ERROR: Failed to list running Docker containers" >&2
+    exit 1
+fi
 while IFS= read -r dir; do
     [[ "$dir" == "$(dirname "$remote_path")/"* ]] || continue
     [[ -f "$dir/$compose_file" && -f "$dir/.env.demo" ]] || continue
@@ -40,7 +44,7 @@ while IFS= read -r dir; do
     if [[ ! " ${running_demos[*]} " == *" $dir "* ]]; then
         running_demos+=("$dir")
     fi
-done < <(docker ps --format '{{.Label "com.docker.compose.project.working_dir"}}')
+done <<< "$running_projects"
 
 restart_running_demos() {
     local dir failed=0

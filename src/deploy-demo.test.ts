@@ -26,7 +26,7 @@ function stub(file: string, body: string) {
 }
 
 function runDeploy(options: { failedHealth?: boolean; previousImage?: boolean; failedBuild?: boolean;
-  failedStop?: boolean; failedRestart?: boolean; changedImageName?: boolean } = {}) {
+  failedStop?: boolean; failedRestart?: boolean; failedPs?: boolean; changedImageName?: boolean } = {}) {
   const dir = scratch();
   const bin = path.join(dir, 'bin');
   const demos = path.join(dir, 'demos');
@@ -51,7 +51,7 @@ case " $* " in
   *' inspect --format {{.Image}} prior-container '*) if [[ "$HAS_IMAGE" == 1 ]]; then echo sha256:previous; fi ;;
   *' inspect --format {{.Config.Image}} prior-container '*) echo starting-six-app ;;
   *' inspect --format {{.Config.Image}} new-container '*) if [[ "$CHANGE_IMAGE" == 1 ]]; then echo renamed-app; else echo starting-six-app; fi ;;
-  *' ps --format '*) printf '%s\\n' "$TARGET" "$OTHER" "$THIRD" "$OTHER" "$NESTED" "$UNRELATED" ;;
+  *' ps --format '*) if [[ "$FAIL_PS" == 1 ]]; then exit 45; fi; printf '%s\\n' "$TARGET" "$OTHER" "$THIRD" "$OTHER" "$NESTED" "$UNRELATED" ;;
   *' ps -a --format '*) printf '%s\\n' "$TARGET" "$OTHER" "$DORMANT" "$NESTED" "$UNRELATED" ;;
   *' stop '*) count=$(cat "$STATE/stops" 2>/dev/null || echo 0); count=$((count + 1)); echo "$count" > "$STATE/stops"; if [[ "$FAIL_STOP" == 1 && "$count" == 2 ]]; then exit 43; fi ;;
   *' up -d '*) if [[ "$FAIL_RESTART" == 1 && "$PWD" == "$OTHER" ]]; then exit 44; fi ;;
@@ -78,6 +78,7 @@ printf 'curl %s\\n' "$*" >> "$COMMAND_LOG"
       FAIL_BUILD: options.failedBuild ? '1' : '0',
       FAIL_STOP: options.failedStop ? '1' : '0',
       FAIL_RESTART: options.failedRestart ? '1' : '0',
+      FAIL_PS: options.failedPs ? '1' : '0',
       CHANGE_IMAGE: options.changedImageName ? '1' : '0',
     },
   });
@@ -99,7 +100,18 @@ test('stops and restarts only running demo stacks', () => {
   expect(result.stdout).not.toContain(`Stopping ${nested}`);
   expect(result.stdout).not.toContain(`Stopping ${unrelated}`);
   expect(result.stdout.match(new RegExp(`Restarting ${other}`, 'g'))).toHaveLength(1);
+  for (const project of [target, other, third]) {
+    expect(log.split('\n').filter((line) =>
+      line === `cwd ${project} command compose -f docker-compose.demo.yml --env-file .env.demo up -d`)).toHaveLength(1);
+  }
   expect(result.stdout).not.toContain(`Restarting ${dormant}`);
+});
+
+test('aborts before changing stacks when listing running containers fails', () => {
+  const { result, log } = runDeploy({ failedPs: true });
+  expect(result.status).not.toBe(0);
+  expect(result.stderr).toContain('Failed to list running Docker containers');
+  expect(log).not.toMatch(/docker compose -f docker-compose.demo.yml --env-file .env.demo (stop|build|up -d)/);
 });
 
 test('restores recorded running stacks after a failed build', () => {
