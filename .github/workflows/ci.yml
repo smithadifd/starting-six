@@ -24,7 +24,7 @@ jobs:
         run: npm ci
 
       - name: Security audit
-        run: npm audit --audit-level=high --omit=dev || echo "::warning::Audit found vulnerabilities (non-blocking)"
+        run: npm audit --audit-level=high --omit=dev
 
       - name: Lint
         run: npm run lint
