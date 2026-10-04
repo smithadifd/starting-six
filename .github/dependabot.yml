@@ -9,6 +9,7 @@ updates:
     groups:
       minor-and-patch:
         applies-to: version-updates
+        patterns: ["*"]
         update-types: ["minor", "patch"]
       security:
         applies-to: security-updates
@@ -32,6 +33,7 @@ updates:
     groups:
       minor-and-patch:
         applies-to: version-updates
+        patterns: ["*"]
         update-types: ["minor", "patch"]
       security:
         applies-to: security-updates
@@ -45,6 +47,7 @@ updates:
     groups:
       minor-and-patch:
         applies-to: version-updates
+        patterns: ["*"]
         update-types: ["minor", "patch"]
       security:
         applies-to: security-updates
@@ -61,6 +64,7 @@ updates:
     groups:
       minor-and-patch:
         applies-to: version-updates
+        patterns: ["*"]
         update-types: ["minor", "patch"]
       security:
         applies-to: security-updates
