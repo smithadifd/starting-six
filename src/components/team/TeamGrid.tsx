@@ -62,9 +62,10 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
     }
   }, [playthroughId]);
 
-  // Sync initialTeam on mount
+  // Sync initialTeam when the server sends a refreshed team.
   useEffect(() => {
-    setAllMembers(initialTeam);
+    const timeout = setTimeout(() => setAllMembers(initialTeam), 0);
+    return () => clearTimeout(timeout);
   }, [initialTeam]);
 
   const handleAddPokemon = useCallback(async (poke: { id: number }) => {
