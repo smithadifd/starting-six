@@ -170,7 +170,10 @@ export function TeamAnalysis({ playthroughId, teamMembers }: TeamAnalysisProps) 
   // hit inside runAnalysis resolves synchronously with no fetch.
   useEffect(() => {
     if (!cacheKey) return;
-    runAnalysis(cacheKey);
+    const timeout = setTimeout(() => {
+      void runAnalysis(cacheKey);
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [cacheKey, runAnalysis]);
 
   if (teamSize === 0) return null;

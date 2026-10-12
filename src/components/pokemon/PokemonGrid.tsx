@@ -55,7 +55,10 @@ export function PokemonGrid() {
 
   // Initial load + filter changes
   useEffect(() => {
-    fetchPage(1, { search, type, generation }, false);
+    const timeout = setTimeout(() => {
+      void fetchPage(1, { search, type, generation }, false);
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [search, type, generation, fetchPage]);
 
   const hasMore = pokemon.length < total;

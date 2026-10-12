@@ -52,17 +52,23 @@ export function PokemonSearchModal({ open, onClose, onSelect, versionGroupId }: 
   // Fetch on open and search changes
   useEffect(() => {
     if (!open) return;
-    fetchPokemon(search);
+    const timeout = setTimeout(() => {
+      void fetchPokemon(search);
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [open, search, fetchPokemon]);
 
   // Focus input on open
   useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    } else {
-      setSearch('');
-      setResults([]);
-    }
+    const timeout = setTimeout(() => {
+      if (open) {
+        inputRef.current?.focus();
+      } else {
+        setSearch('');
+        setResults([]);
+      }
+    }, open ? 100 : 0);
+    return () => clearTimeout(timeout);
   }, [open]);
 
   const handleInput = useCallback(() => {
