@@ -9,9 +9,9 @@ export default defineConfig({
     starlight({
       title: 'Starting Six',
       description: 'Pokemon team builder and analysis tool — documentation.',
-      social: {
-        github: 'https://github.com/smithadifd/starting-six',
-      },
+      social: [
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/smithadifd/starting-six' },
+      ],
       editLink: {
         baseUrl: 'https://github.com/smithadifd/starting-six/edit/main/docs/',
       },
