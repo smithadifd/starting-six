@@ -52,7 +52,7 @@
     "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.6",
-    "jsdom": "^30.1.1",
+    "jsdom": "^31.0.1",
     "postcss": "^8.5.33",
     "serwist": "^9.5.12",
     "sharp": "^0.35.5",
