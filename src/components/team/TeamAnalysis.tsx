@@ -170,6 +170,7 @@ export function TeamAnalysis({ playthroughId, teamMembers }: TeamAnalysisProps) 
   // hit inside runAnalysis resolves synchronously with no fetch.
   useEffect(() => {
     if (!cacheKey) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- auto-run analysis when the team composition changes (cache hit resolves synchronously by design)
     runAnalysis(cacheKey);
   }, [cacheKey, runAnalysis]);
 
