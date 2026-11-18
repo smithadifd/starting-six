@@ -139,6 +139,19 @@ install needs no separate migration step. Key tables:
 - **No `cn()` helper** — concatenate classes with template literals (the established pattern).
 - Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Feature branches off `main`.
 
+## Releases
+
+Release class: versioned
+
+- release-please (`.github/workflows/release-please.yml`, driven by conventional commits) keeps a
+  release PR open and tags `vX.Y.Z` when the owner merges it. Version source is `package.json`;
+  config is `release-please-config.json` and `.release-please-manifest.json`.
+- Squash-merge titles are conventional commits, because the squash commit on `main` is what
+  release-please reads. The PR title check (`pr-title.yml`, "Conventional Commit title") is NOT a
+  required status check today, so it reports but does not block merges.
+- The public demo still deploys from `main` via the demo host's cron. Merging any PR, including each
+  release PR, is a commit to `main` and so redeploys the demo.
+
 ## Critical gotchas — read before changing these areas
 
 - **Live EC2 auto-deploy.** The public demo's EC2 cron polls `main` every 5 minutes and

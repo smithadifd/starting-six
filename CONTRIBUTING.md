@@ -68,8 +68,10 @@ docker compose up -d         # dev, port 3000
    (`docker/Dockerfile`, no push).
 5. Use [Conventional Commit](https://www.conventionalcommits.org/) messages (`feat:`, `fix:`,
    `docs:`, `refactor:`, `chore:`).
-6. Open a PR with a short summary and a test plan. CI runs two jobs: **Lint & Build** and
-   **Docker Build**.
+6. Open a PR with a short summary and a test plan. The PR title must be a conventional commit,
+   because it becomes the squash-merge title that release-please reads. The "Conventional Commit
+   title" check verifies this; it is not a required check, so it does not block merges. CI runs two
+   jobs: **Lint & Build** and **Docker Build**.
 
 ## A few things that will save you time
 

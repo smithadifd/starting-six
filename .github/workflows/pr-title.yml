@@ -1,0 +1,26 @@
+# Checks that a pull request title is a Conventional Commit. The title becomes
+# the squash-merge commit on main, which release-please reads. This check is
+# not a required status check, so it reports but does not block merges.
+name: PR title
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  conventional-title:
+    name: Conventional Commit title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([^)]+\))?!?: .+'
+          if [[ ! "$TITLE" =~ $pattern ]]; then
+            echo "::error::PR title must be a Conventional Commit, e.g. 'feat(scope): add thing' or 'fix!: breaking change'. Got: $TITLE"
+            exit 1
+          fi
