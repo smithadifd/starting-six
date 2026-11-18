@@ -1,4 +1,8 @@
 version: 2
+# Grouping: each ecosystem gets one `minor-and-patch` group and one `major`
+# group, so majors arrive as a single PR per ecosystem instead of one PR each.
+# Security updates keep their own group. Majors we are not ready for are listed
+# under `ignore` with the reason and date.
 updates:
   - package-ecosystem: "npm"
     directory: "/"
@@ -11,6 +15,10 @@ updates:
         applies-to: version-updates
         patterns: ["*"]
         update-types: ["minor", "patch"]
+      major:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["major"]
       security:
         applies-to: security-updates
         patterns: ["*"]
@@ -22,6 +30,12 @@ updates:
       - dependency-name: "drizzle-orm"
         update-types: ["version-update:semver-major"]
       - dependency-name: "drizzle-kit"
+        update-types: ["version-update:semver-major"]
+      # 2026-11-18: typescript 7 is not usable yet. eslint-config-next pulls
+      # typescript-eslint, whose peer range is typescript >=4.8.4 <6.1.0 (it throws
+      # "does not support TS 7.0" and `npm run lint` fails). Revisit when
+      # typescript-eslint supports TS 7.
+      - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "npm"
@@ -35,6 +49,10 @@ updates:
         applies-to: version-updates
         patterns: ["*"]
         update-types: ["minor", "patch"]
+      major:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["major"]
       security:
         applies-to: security-updates
         patterns: ["*"]
@@ -49,6 +67,10 @@ updates:
         applies-to: version-updates
         patterns: ["*"]
         update-types: ["minor", "patch"]
+      major:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["major"]
       security:
         applies-to: security-updates
         patterns: ["*"]
@@ -66,6 +88,10 @@ updates:
         applies-to: version-updates
         patterns: ["*"]
         update-types: ["minor", "patch"]
+      major:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["major"]
       security:
         applies-to: security-updates
         patterns: ["*"]
