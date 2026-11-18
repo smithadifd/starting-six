@@ -52,6 +52,7 @@ export function PokemonSearchModal({ open, onClose, onSelect, versionGroupId }: 
   // Fetch on open and search changes
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch on open/search change
     fetchPokemon(search);
   }, [open, search, fetchPokemon]);
 
@@ -60,6 +61,7 @@ export function PokemonSearchModal({ open, onClose, onSelect, versionGroupId }: 
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset modal state on close
       setSearch('');
       setResults([]);
     }
