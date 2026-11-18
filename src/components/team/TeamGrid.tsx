@@ -64,6 +64,7 @@ export function TeamGrid({ playthroughId, versionGroupId, initialTeam }: TeamGri
 
   // Sync initialTeam on mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- resync local team when the server sends a refreshed initialTeam
     setAllMembers(initialTeam);
   }, [initialTeam]);
 
