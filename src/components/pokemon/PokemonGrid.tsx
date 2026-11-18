@@ -55,6 +55,7 @@ export function PokemonGrid() {
 
   // Initial load + filter changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch on filter change; state is set after the request resolves
     fetchPage(1, { search, type, generation }, false);
   }, [search, type, generation, fetchPage]);
 
