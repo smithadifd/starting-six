@@ -5,7 +5,7 @@ import * as schema from './schema';
 
 let db: ReturnType<typeof createDb> | null = null;
 
-function ensureSchema(sqlite: BetterSqlite3.Database) {
+export function ensureSchema(sqlite: BetterSqlite3.Database) {
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS pokemon (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
