@@ -10,9 +10,8 @@ next-env.d.ts
 tsconfig.tsbuildinfo
 
 # Environment variables
-.env.local
-.env.production
-.env*.local
+.env*
+!.env*.example
 
 # Database
 data/*
