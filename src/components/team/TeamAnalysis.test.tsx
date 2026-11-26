@@ -177,7 +177,7 @@ describe('TeamAnalysis — auto-run + client cache', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  // --- Regression: async correctness in the auto-run path (codex second pass) ---
+  // --- Regression: async correctness in the auto-run path ---
 
   it('race: a stale in-flight response is not cached under the superseded key (K resolves last with K2 data)', async () => {
     // Two in-flight requests, resolved out of order. The endpoint reads CURRENT
